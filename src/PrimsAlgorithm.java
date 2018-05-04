@@ -1,5 +1,6 @@
 import graph.*;
 
+import java.awt.*;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -70,6 +71,22 @@ public class PrimsAlgorithm {
         fgEdge.setWeight(9);
         inputGraph.add(fgEdge);
 
+        HashSet<BasicVertex> verticesNotYetCovered = new HashSet<BasicVertex>();
+        verticesNotYetCovered.add(aVtx);
+        verticesNotYetCovered.add(bVtx);
+        verticesNotYetCovered.add(cVtx);
+        verticesNotYetCovered.add(dVtx);
+        verticesNotYetCovered.add(eVtx);
+        verticesNotYetCovered.add(fVtx);
+        verticesNotYetCovered.add(gVtx);
+
+        new PrimsAlgorithm().Run(inputGraph, verticesNotYetCovered);
+    }
+
+    public void Run(BasicUndirectedGraph inputGraph, HashSet<BasicVertex> verticesNotYetCovered){
+
+        PrintGraph(inputGraph);
+
         HashMap<String, Integer> keyValues = new HashMap<String, Integer>();
         keyValues.put("A", 0);
         keyValues.put("B", Integer.MAX_VALUE);
@@ -81,14 +98,7 @@ public class PrimsAlgorithm {
 
         BasicUndirectedGraph mst = new BasicUndirectedGraph("mst");
 
-        HashSet<BasicVertex> verticesNotYetCovered = new HashSet<BasicVertex>();
-        verticesNotYetCovered.add(aVtx);
-        verticesNotYetCovered.add(bVtx);
-        verticesNotYetCovered.add(cVtx);
-        verticesNotYetCovered.add(dVtx);
-        verticesNotYetCovered.add(eVtx);
-        verticesNotYetCovered.add(fVtx);
-        verticesNotYetCovered.add(gVtx);
+
 
         while(!verticesNotYetCovered.isEmpty()){
             int minWeight = Integer.MAX_VALUE;
@@ -119,7 +129,23 @@ public class PrimsAlgorithm {
            verticesNotYetCovered.remove(nextVertex);
         }
 
+        PrintGraph(mst);
 
     }
 
+    private void PrintGraph(BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> G) {
+        System.out.println("================================================");
+        System.out.println("# of vertices: " + G.sizeVertices());
+        System.out.println("# of edges: " + G.sizeEdges());
+        System.out.println();
+
+        for (BasicSimpleEdge<BasicVertex> e : G.edges())
+            System.out.println(FormatEdge(e));
+
+        System.out.println();
+    }
+
+    private String FormatEdge(BasicSimpleEdge<BasicVertex> e) {
+        return String.format("{%2s}----%2s----{%2s}", e.from().name(), e.weight(), e.to().name());
+    }
 }
