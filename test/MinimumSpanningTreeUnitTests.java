@@ -1,12 +1,28 @@
-import graph.*;
+import graph.BasicSimpleEdge;
+import graph.BasicVertex;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.Assert.*;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.File;
+import java.io.FileNotFoundException;
 
-public class BoruvkasSequential {
+public class MinimumSpanningTreeUnitTests {
+    @Test
+    public void foo() {
+        try {
+            GraphReader gr = new GraphReader();
 
-    public static void main (String[] args) {
-        ComponentisedGraph G = new ComponentisedGraph("G", "Undirected");
+            ComponentisedGraph graph = gr.ReadFileAsComponentisedGraph("test_input" + File.separator + "");
+            ComponentisedGraph G = new ComponentisedGraph("G", "Undirected");
+
+
+
+        } catch(FileNotFoundException ex) {
+
+        } catch (GraphInputException ex) {
+
+        }
 
         /*
         for (int i = 0; i < 6; i++) {
@@ -33,7 +49,7 @@ public class BoruvkasSequential {
         E[7].setWeight(5);
         E[8] = new BasicSimpleEdge("4_5", G.vertexForName("4"), G.vertexForName("5"), false);
         E[8].setWeight(2);
-        */
+
         for (int i = 0; i < 10; i++) {
             G.add(new BasicVertex("" + i));
         }
@@ -71,64 +87,6 @@ public class BoruvkasSequential {
             G.add(e);
 
         new BoruvkasSequential().Run(G);
-    }
-
-    public BasicUndirectedGraph Run(ComponentisedGraph G) {
-
-        PrintGraph(G);
-
-        BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> mst = new BasicUndirectedGraph("MST", "Undirected");
-
-        for (BasicVertex v : G.vertices())
-            mst.add(v);
-
-        PrintGraph(mst);
-
-        while (G.sizeComponents() > 1) {
-
-            Map<Integer, BasicSimpleEdge<BasicVertex>> cheapestOutgoingEdge = new HashMap<>();
-
-            for (BasicSimpleEdge<BasicVertex> e : G.edges()) {
-                BasicVertex v1 = e.to();
-                BasicVertex v2 = e.from();
-                int v1Component = G.getVertexComponentTag(v1);
-                int v2Component = G.getVertexComponentTag(v2);
-
-                if (v1Component != v2Component) {
-                    if (!cheapestOutgoingEdge.containsKey(v1Component) || cheapestOutgoingEdge.get(v1Component).weight() > e.weight()) {
-                        cheapestOutgoingEdge.put(v1Component, e);
-                    }
-
-                    if (!cheapestOutgoingEdge.containsKey(v2Component) || cheapestOutgoingEdge.get(v2Component).weight() > e.weight()) {
-                        cheapestOutgoingEdge.put(v2Component, e);
-                    }
-                }
-            }
-
-            for (BasicSimpleEdge<BasicVertex> e : cheapestOutgoingEdge.values()) {
-                //if (G.mergeComponentsAlongEdge(e))
-                //    mst.add(e);
-            }
-        }
-
-        PrintGraph(mst);
-
-        return new BasicUndirectedGraph("G", "Undirected");
-    }
-
-    private void PrintGraph(BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> G) {
-        System.out.println("================================================");
-        System.out.println("# of vertices: " + G.sizeVertices());
-        System.out.println("# of edges: " + G.sizeEdges());
-        System.out.println();
-
-        for (BasicSimpleEdge<BasicVertex> e : G.edges())
-            System.out.println(FormatEdge(e));
-
-        System.out.println();
-    }
-
-    private String FormatEdge(BasicSimpleEdge<BasicVertex> e) {
-        return String.format("{%2s}----%2s----{%2s}", e.from().name(), e.weight(), e.to().name());
+        */
     }
 }

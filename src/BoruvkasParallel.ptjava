@@ -1,14 +1,13 @@
 import graph.*;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class BoruvkasSequential {
+public class BoruvkasParallel {
 
     public static void main (String[] args) {
-        ComponentisedGraph G = new ComponentisedGraph("G", "Undirected");
+        MergeableGraph G = new MergeableGraph("G", "Undirected");
 
-        /*
         for (int i = 0; i < 6; i++) {
             G.add(new BasicVertex("" + i));
         }
@@ -33,7 +32,8 @@ public class BoruvkasSequential {
         E[7].setWeight(5);
         E[8] = new BasicSimpleEdge("4_5", G.vertexForName("4"), G.vertexForName("5"), false);
         E[8].setWeight(2);
-        */
+
+        /*
         for (int i = 0; i < 10; i++) {
             G.add(new BasicVertex("" + i));
         }
@@ -66,24 +66,34 @@ public class BoruvkasSequential {
         E[11].setWeight(2);
         E[12] = new BasicSimpleEdge("8_9", G.vertexForName("8"), G.vertexForName("9"), false);
         E[12].setWeight(1);
-
-        for (BasicSimpleEdge<BasicVertex> e : E)
+        */
+        for (BasicSimpleEdge e : E)
             G.add(e);
 
-        new BoruvkasSequential().Run(G);
+        new BoruvkasParallel().Run(G);
     }
 
-    public BasicUndirectedGraph Run(ComponentisedGraph G) {
+    public BasicUndirectedGraph Run(MergeableGraph G) {
 
         PrintGraph(G);
 
-        BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> mst = new BasicUndirectedGraph("MST", "Undirected");
+        BasicUndirectedGraph<Vertex, UndirectedEdge<Vertex>> mst = new BasicUndirectedGraph("MST", "Undirected");
 
-        for (BasicVertex v : G.vertices())
+        for (Vertex v : G.vertices())
             mst.add(v);
 
         PrintGraph(mst);
 
+        List<Vertex> vertices = new ArrayList(G.verticesSet());
+        Collections.shuffle(vertices);
+        Queue<Vertex> work = new ConcurrentLinkedQueue(vertices);
+
+        while (work.size() > 1) {
+            Vertex vertToProcess = work.poll();
+            ProcessComponent(G, vertToProcess, mst);
+        }
+
+        /*
         while (G.sizeComponents() > 1) {
 
             Map<Integer, BasicSimpleEdge<BasicVertex>> cheapestOutgoingEdge = new HashMap<>();
@@ -106,29 +116,58 @@ public class BoruvkasSequential {
             }
 
             for (BasicSimpleEdge<BasicVertex> e : cheapestOutgoingEdge.values()) {
-                //if (G.mergeComponentsAlongEdge(e))
-                //    mst.add(e);
+                if (G.mergeComponentsAlongEdge(e))
+                    mst.add(e);
             }
         }
+        */
 
+        System.out.println("MST Found");
         PrintGraph(mst);
 
         return new BasicUndirectedGraph("G", "Undirected");
     }
 
-    private void PrintGraph(BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> G) {
+    private void ProcessComponent(MergeableGraph g, Vertex vertToProcess, BasicUndirectedGraph<Vertex, UndirectedEdge<Vertex>> mst) {
+
+        System.out.println("processing node " + vertToProcess.name());
+
+        try {
+            PrintGraph(g);
+
+            UndirectedEdge<Vertex> lowestEdge = null;
+
+            for (UndirectedEdge<Vertex> edge : g.incidentEdges(vertToProcess)) {
+                if (lowestEdge == null || edge.weight() < lowestEdge.weight()) {
+                    lowestEdge = edge;
+                }
+            }
+
+            System.out.println("merge edge " + lowestEdge.name());
+
+            g.mergeAdjacentVertices(lowestEdge, vertToProcess);
+
+            UndirectedEdge<Vertex> originalEdge = g.getOriginalEdge(lowestEdge);
+            mst.add(originalEdge);
+
+        } catch(GraphMergeException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+
+    private void PrintGraph(BasicUndirectedGraph<Vertex, UndirectedEdge<Vertex>> G) {
         System.out.println("================================================");
         System.out.println("# of vertices: " + G.sizeVertices());
         System.out.println("# of edges: " + G.sizeEdges());
         System.out.println();
 
-        for (BasicSimpleEdge<BasicVertex> e : G.edges())
+        for (UndirectedEdge<Vertex> e : G.edges())
             System.out.println(FormatEdge(e));
 
         System.out.println();
     }
 
-    private String FormatEdge(BasicSimpleEdge<BasicVertex> e) {
-        return String.format("{%2s}----%2s----{%2s}", e.from().name(), e.weight(), e.to().name());
+    private String FormatEdge(UndirectedEdge<Vertex> e) {
+        return String.format("{%2s}----%2s----{%2s}", e.first().name(), e.weight(), e.second().name());
     }
 }

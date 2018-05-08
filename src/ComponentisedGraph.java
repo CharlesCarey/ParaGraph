@@ -8,6 +8,7 @@ public class ComponentisedGraph extends BasicUndirectedGraph<BasicVertex, BasicS
 
     private final Map<Integer, List<BasicVertex>> _components = new HashMap<>();
     private final Map<BasicVertex, Integer> _verts = new HashMap<>();
+    private final Map<Integer, List<BasicSimpleEdge<BasicVertex>>> _componentsOutgoingEdges = new HashMap<>();
 
     private int nextComponentTag = 0;
 
@@ -31,8 +32,24 @@ public class ComponentisedGraph extends BasicUndirectedGraph<BasicVertex, BasicS
         vList.add((v));
         _components.put(componentTag, vList);
         _verts.put(v, componentTag);
+        _componentsOutgoingEdges.put(componentTag, new ArrayList<>());
 
         return super.add(v);
+    }
+
+    /* (non-Javadoc)
+	 * @see graph.impl.GraphImplementation#add(graph.Vertex)
+	 */
+    @Override
+    public boolean add(BasicSimpleEdge<BasicVertex> e) {
+
+        int v1Component = getVertexComponentTag(e.from());
+        int v2Component = getVertexComponentTag(e.to());
+
+        _componentsOutgoingEdges.get(v1Component).add(e);
+        _componentsOutgoingEdges.get(v2Component).add(e);
+
+        return super.add(e);
     }
 
     public boolean remove(BasicVertex v) {
@@ -40,12 +57,19 @@ public class ComponentisedGraph extends BasicUndirectedGraph<BasicVertex, BasicS
             return false;
 
         int componentTag = _verts.remove(v);
-        _components.get(componentTag).remove(v);
+        List<BasicVertex> component = _components.get(componentTag);
+        component.remove(v);
+
+        if (component.size() == 0) {
+            _components.remove(componentTag);
+        }
 
         return true;
     }
 
-    public boolean mergeComponentsAlongEdge(BasicSimpleEdge<BasicVertex> e) {
+    public boolean connectComponentsAlongEdge(BasicSimpleEdge<BasicVertex> e) {
+
+        // Move all verts in component 2 into component 1
         BasicVertex v1 = e.to();
         BasicVertex v2 = e.from();
         int v1Component = _verts.get(v1).intValue();
@@ -63,6 +87,13 @@ public class ComponentisedGraph extends BasicUndirectedGraph<BasicVertex, BasicS
             component1Verts.add(v);
         }
 
+        /*
+        _componentsOutgoingEdges.get(v1Component).remove(e);
+        _componentsOutgoingEdges.get(v2Component).remove(e);
+        _componentsOutgoingEdges.get(v1Component).addAll(_componentsOutgoingEdges.get(v2Component));
+        _componentsOutgoingEdges.remove(v2Component);
+        */
+
         return true;
     }
 
@@ -72,5 +103,13 @@ public class ComponentisedGraph extends BasicUndirectedGraph<BasicVertex, BasicS
 
     public int getVertexComponentTag(BasicVertex v) {
         return _verts.get(v);
+    }
+
+    public List<Integer> getComponentTags() {
+        return new ArrayList(_components.keySet());
+    }
+
+    public List<BasicSimpleEdge<BasicVertex>> getOutgoingEdgesOfComponent(int componentTag) {
+        return _componentsOutgoingEdges.get(componentTag);
     }
 }
