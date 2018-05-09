@@ -14,15 +14,16 @@ public class MergeableGraph extends BasicUndirectedGraph<Vertex, UndirectedEdge<
         super(name, type);
     }
 
-    public boolean add(UndirectedEdge<Vertex> e) {
+    public boolean add(UndirectedEdge<Vertex> e, boolean originalEdge) {
         UndirectedEdge<Vertex> existingEdge = this.edgeBetween(e.first(), e.second());
 
         if (existingEdge != null && e.weight() < existingEdge.weight()) {
             this.remove(existingEdge);
         }
-
-        _equivalentEdgeMap.put(e, e);
-
+        
+        if (originalEdge) {
+        	_equivalentEdgeMap.put(e, e);
+        }
 
         return super.add(e);
     }
@@ -49,9 +50,9 @@ public class MergeableGraph extends BasicUndirectedGraph<Vertex, UndirectedEdge<
                 UndirectedEdge<Vertex> newEdge = new BasicSimpleEdge<>(edgeName, sourceVert, destVert, false);
                 newEdge.setWeight(e.weight());
 
-                _equivalentEdgeMap.put(newEdge, e);
+                _equivalentEdgeMap.put(newEdge, _equivalentEdgeMap.get(e));
 
-                this.add(newEdge);
+                this.add(newEdge, false);
             }
         }
 
