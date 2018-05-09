@@ -1,10 +1,30 @@
 import graph.BasicSimpleEdge;
 import graph.BasicVertex;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.Assert.*;
 
-public class GraphGenerator {
-	public MergeableGraph Graph1() {
-		MergeableGraph G = new MergeableGraph("G", "Undirected");
+import java.io.File;
+import java.io.FileNotFoundException;
 
+public class MinimumSpanningTreeUnitTests {
+    @Test
+    public void foo() {
+        try {
+            GraphReader gr = new GraphReader();
+
+            ComponentisedGraph graph = gr.ReadFileAsComponentisedGraph("test_input" + File.separator + "");
+            ComponentisedGraph G = new ComponentisedGraph("G", "Undirected");
+
+
+
+        } catch(FileNotFoundException ex) {
+
+        } catch (GraphInputException ex) {
+
+        }
+
+        /*
         for (int i = 0; i < 6; i++) {
             G.add(new BasicVertex("" + i));
         }
@@ -29,15 +49,6 @@ public class GraphGenerator {
         E[7].setWeight(5);
         E[8] = new BasicSimpleEdge("4_5", G.vertexForName("4"), G.vertexForName("5"), false);
         E[8].setWeight(2);
-
-        for (BasicSimpleEdge e : E)
-            G.add(e, true);
-        
-        return G;
-	}
-	
-	public MergeableGraph Graph2() {
-		MergeableGraph G = new MergeableGraph("G", "Undirected");
 
         for (int i = 0; i < 10; i++) {
             G.add(new BasicVertex("" + i));
@@ -71,10 +82,11 @@ public class GraphGenerator {
         E[11].setWeight(2);
         E[12] = new BasicSimpleEdge("8_9", G.vertexForName("8"), G.vertexForName("9"), false);
         E[12].setWeight(1);
-        
-        for (BasicSimpleEdge e : E)
-            G.add(e, true);
-        
-        return G;
-	}
+
+        for (BasicSimpleEdge<BasicVertex> e : E)
+            G.add(e);
+
+        new BoruvkasSequential().Run(G);
+        */
+    }
 }

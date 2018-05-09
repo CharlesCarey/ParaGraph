@@ -6,7 +6,7 @@ public class KhansTopologicalSort {
 
     public static void main (String[] args) {
         KhansTopologicalSort khan = new KhansTopologicalSort();
-        GraphGenerator graphGenerator = new GraphGenerator();
+        RandomGraphGenerator graphGenerator = new RandomGraphGenerator();
 
         List<Vertex> vertices = graphGenerator.generateVertices(10, 5);
         List<DirectedEdge> edges = graphGenerator.generateEdges(vertices, 1);
