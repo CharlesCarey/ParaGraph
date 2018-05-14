@@ -1,3 +1,4 @@
+package BoruvkasAlgorithm;
 import graph.*;
 
 import java.util.*;

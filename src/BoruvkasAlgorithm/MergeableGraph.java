@@ -1,11 +1,15 @@
+package BoruvkasAlgorithm;
 import graph.*;
 
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class MergeableGraph extends BasicUndirectedGraph<Vertex, UndirectedEdge<Vertex>> {
 
     private final Map<UndirectedEdge<Vertex>, UndirectedEdge<Vertex>> _equivalentEdgeMap = new HashMap<>();
-
+    private final Map<Vertex, Lock> _vertexLocks = new HashMap<>();
+    
     public MergeableGraph(String name) {
         super(name);
     }
@@ -14,6 +18,12 @@ public class MergeableGraph extends BasicUndirectedGraph<Vertex, UndirectedEdge<
         super(name, type);
     }
 
+    public boolean add(Vertex v) {
+    	_vertexLocks.put(v, new ReentrantLock());
+    	
+    	return super.add(v);
+    }
+    
     public boolean add(UndirectedEdge<Vertex> e, boolean originalEdge) {
         UndirectedEdge<Vertex> existingEdge = this.edgeBetween(e.first(), e.second());
 
@@ -28,7 +38,7 @@ public class MergeableGraph extends BasicUndirectedGraph<Vertex, UndirectedEdge<
         return super.add(e);
     }
 
-    public void mergeAdjacentVertices(UndirectedEdge<Vertex> edge, Vertex vertexToMerge) throws GraphMergeException {
+    public synchronized void mergeAdjacentVertices(UndirectedEdge<Vertex> edge, Vertex vertexToMerge) throws GraphMergeException {
 
         if (edge.first() != vertexToMerge && edge.second() != vertexToMerge)
             throw new GraphMergeException("Vertex to merge is not connected to the edge specified");
@@ -61,5 +71,27 @@ public class MergeableGraph extends BasicUndirectedGraph<Vertex, UndirectedEdge<
 
     public UndirectedEdge<Vertex> getOriginalEdge(UndirectedEdge<Vertex> edge) {
         return _equivalentEdgeMap.get(edge);
+    }
+    
+    public Lock getVertexLock(Vertex v) {
+    	return _vertexLocks.get(v);
+    }
+    
+    public boolean TryGetVertexLock(Vertex v, int threadId) {
+    	
+    	boolean success = _vertexLocks.get(v).tryLock();
+    	
+    	if (success) {
+    		System.out.println(String.format("ID: %s; Locks %s", threadId, v.name()));
+    	} else {
+    		System.out.println(String.format("ID: %s; Failed Lock %s", threadId, v.name()));
+    	}
+    	
+    	return success;
+    }
+    
+    public void ReleaseLock(Vertex v, int threadId) {
+    	System.out.println(String.format("ID: %s; Releases %s", threadId, v.name()));
+    	_vertexLocks.get(v).unlock();
     }
 }

@@ -1,0 +1,107 @@
+package BoruvkasAlgorithm;
+
+import graph.*;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+
+public class BoruvkasParallelV2 {
+	
+    private Map<Integer, BasicSimpleEdge<BasicVertex>> _cheapestOutgoingEdge;
+
+    public static void main (String[] args) {
+        new BoruvkasParallelV2().Run(new GraphGenerator().GetGridGraph(3, 3, 1, 100));
+    }
+
+    public BasicUndirectedGraph Run(ComponentisedGraph G) {
+
+        PrintGraph(G);
+
+        BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> mst = new BasicUndirectedGraph("MST", "Undirected");
+
+        for (BasicVertex v : G.vertices())
+            mst.add(v);
+        
+        int iteration = 1;
+
+        while (G.sizeComponents() > 1) {
+        	
+        	System.out.println(String.format("============== START ITERATION %s ==============\n", iteration++));
+        			
+            _cheapestOutgoingEdge = new ConcurrentHashMap();
+
+            Queue<BasicSimpleEdge<BasicVertex>> edges = new ConcurrentLinkedQueue(new ArrayList(G.edgesSet()));
+            FindCheapestEdges(edges, G);
+            
+            try {
+            	
+            	TaskIDGroup tasks = FindCheapestEdges(edges, G);
+            	tasks.waitTillFinished();
+            	
+            } catch(ExecutionException ex) {
+                System.out.println("Execution Exception");
+            } catch(InterruptedException ex) {
+            	System.out.println("Interrupted Exception");
+            }
+          
+            System.out.println("\nCheapest Edges:");
+            for (Integer key : _cheapestOutgoingEdge.keySet()) {
+            	System.out.println(String.format("Component: %s; Edge: %s", key, _cheapestOutgoingEdge.get(key).name()));
+            }
+
+            for (BasicSimpleEdge<BasicVertex> e : _cheapestOutgoingEdge.values()) {
+                if (G.connectComponentsAlongEdge(e))
+                    mst.add(e);
+            }
+            
+            System.out.println();
+        }
+
+        PrintGraph(mst);
+
+        return new BasicUndirectedGraph("G", "Undirected");
+    }
+      
+    TASK(2) private void FindCheapestEdges(Queue<BasicSimpleEdge<BasicVertex>> edges, ComponentisedGraph g) {
+    	
+    	BasicSimpleEdge<BasicVertex> e = null;
+    	
+    	while ((e = edges.poll()) != null) {
+    		
+    		System.out.println("ID: " + CurrentTask.relativeID() + "; Processing: " + e.name());		
+
+    		BasicVertex v1 = e.to();
+            BasicVertex v2 = e.from();
+            int v1Component = g.getVertexComponentTag(v1);
+            int v2Component = g.getVertexComponentTag(v2);
+
+            if (v1Component != v2Component) {
+                if (!_cheapestOutgoingEdge.containsKey(v1Component) || _cheapestOutgoingEdge.get(v1Component).weight() > e.weight()) {
+                	_cheapestOutgoingEdge.put(v1Component, e);
+                }
+
+                if (!_cheapestOutgoingEdge.containsKey(v2Component) || _cheapestOutgoingEdge.get(v2Component).weight() > e.weight()) {
+                	_cheapestOutgoingEdge.put(v2Component, e);
+                }
+            }
+    	}
+    }
+
+    private void PrintGraph(BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> G) {
+        System.out.println("================================================");
+        System.out.println("# of vertices: " + G.sizeVertices());
+        System.out.println("# of edges: " + G.sizeEdges());
+        System.out.println();
+
+        for (BasicSimpleEdge<BasicVertex> e : G.edges())
+            System.out.println(FormatEdge(e));
+
+        System.out.println();
+    }
+
+    private String FormatEdge(BasicSimpleEdge<BasicVertex> e) {
+        return String.format("{%2s}----%2s----{%2s}", e.from().name(), e.weight(), e.to().name());
+    }
+}
