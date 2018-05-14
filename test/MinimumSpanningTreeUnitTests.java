@@ -4,6 +4,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.Assert.*;
 
+import BoruvkasAlgorithm.ComponentisedGraph;
+import BoruvkasAlgorithm.GraphInputException;
+import BoruvkasAlgorithm.GraphReader;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 

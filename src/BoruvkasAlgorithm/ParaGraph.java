@@ -1,3 +1,4 @@
+package BoruvkasAlgorithm;
 public class ParaGraph {
 
 

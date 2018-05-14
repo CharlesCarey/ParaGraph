@@ -1,3 +1,4 @@
+package BoruvkasAlgorithm;
 import graph.BasicSimpleEdge;
 import graph.BasicUndirectedGraph;
 import graph.BasicVertex;

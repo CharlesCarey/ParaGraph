@@ -1,9 +1,12 @@
+package BoruvkasAlgorithm;
+
 import graph.*;
 import pt.runtime.CurrentTask;
 import pt.runtime.TaskIDGroup;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.locks.Lock;
 
 public class BoruvkasParallel {
 
@@ -11,7 +14,7 @@ public class BoruvkasParallel {
 	private BasicUndirectedGraph<Vertex, UndirectedEdge<Vertex>> _mst;
 	
     public static void main (String[] args) {
-        new BoruvkasParallel().Run(new GraphGenerator().Graph2());
+        new BoruvkasParallel().Run(new GraphGenerator().GetMergeableGridGraph(3, 3, 1, 100));
     }
 
     public BasicUndirectedGraph Run(MergeableGraph G) {
@@ -26,14 +29,16 @@ public class BoruvkasParallel {
             _mst.add(v);
 
         PrintGraph(_mst);
-
+     
         List<Vertex> vertices = new ArrayList(_graph.verticesSet());
         Collections.shuffle(vertices);
         Queue<Vertex> work = new ConcurrentLinkedQueue(vertices);
         
         try {
+        	
         	TaskIDGroup tasks = ProcessComponent(work);
         	tasks.waitTillFinished();
+        	
         } catch(ExecutionException ex) {
             System.out.println("Execution Exception");
         } catch(InterruptedException ex) {
@@ -53,27 +58,38 @@ public class BoruvkasParallel {
 			
 			vertToProcess = work.poll();
 			
-			System.out.println("ID: " + CurrentTask.relativeID() + "; Processing: " + vertToProcess.name());
-	
-	        try {
-	            UndirectedEdge<Vertex> lowestEdge = null;
-	
-	            for (UndirectedEdge<Vertex> edge : _graph.incidentEdges(vertToProcess)) {
-	                if (lowestEdge == null || edge.weight() < lowestEdge.weight()) {
-	                    lowestEdge = edge;
-	                }
-	            }
-	
-	            System.out.println("ID: " + CurrentTask.relativeID() + "; Selected: " + lowestEdge.name());
-	
-	            _graph.mergeAdjacentVertices(lowestEdge, vertToProcess);
-	
-	            UndirectedEdge<Vertex> originalEdge = _graph.getOriginalEdge(lowestEdge);
-	            _mst.add(originalEdge);
-	
-	        } catch(GraphMergeException ex) {
-	            System.out.println(ex.getMessage());
-	        }
+			Lock vertLock;
+			
+			if (_graph.TryGetVertexLock(vertToProcess, CurrentTask.relativeID())) {
+		        try {
+		        	System.out.println("ID: " + CurrentTask.relativeID() + "; Processing: " + vertToProcess.name());		
+
+		            UndirectedEdge<Vertex> lowestEdge = null;
+		
+		            for (UndirectedEdge<Vertex> edge : _graph.incidentEdges(vertToProcess)) {
+		                if (lowestEdge == null || edge.weight() < lowestEdge.weight()) {
+		                    lowestEdge = edge;
+		                }
+		            }
+		
+		            System.out.println("ID: " + CurrentTask.relativeID() + "; Selected: " + lowestEdge.name());
+		
+		            if (_graph.TryGetVertexLock(lowestEdge.other(vertToProcess), CurrentTask.relativeID())) {
+		            	try {
+				            _graph.mergeAdjacentVertices(lowestEdge, vertToProcess);
+				            UndirectedEdge<Vertex> originalEdge = _graph.getOriginalEdge(lowestEdge);
+				            _mst.add(originalEdge);
+		            	} finally {
+		            		_graph.ReleaseLock(lowestEdge.other(vertToProcess), CurrentTask.relativeID());
+		            	}
+		            }
+		            
+		        } catch (GraphMergeException ex) {	        			        	
+		            System.out.println(ex.getMessage());
+		        } finally {
+		        	_graph.ReleaseLock(vertToProcess, CurrentTask.relativeID());
+		        }
+			}
 		}
     }
 
