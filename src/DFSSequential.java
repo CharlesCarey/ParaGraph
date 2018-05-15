@@ -24,7 +24,6 @@ public class DFSSequential {
             break;
         }
 
-
         return new ArrayList<Vertex>(_queue);
     }
 
@@ -44,6 +43,41 @@ public class DFSSequential {
                     visited.push(next);
             }
         }
+
+//        Set<V> whiteList = new HashSet<V>();
+//        Deque<V> blackList = new LinkedList<V>();
+//            Iterator<V> vI = g.adjacentVerticesIterator((root));
+//            while (vI.hasNext()) {
+//                whiteList.add(vI.next());
+//            }
+//        }
+//
+//        public boolean hasNext() {
+//            return !whiteList.isEmpty() || !blackList.isEmpty();
+//        }
+//
+//        /**
+//         *
+//         * @throws NoSuchElementException
+//         */
+//        public V next() {
+//            V next = blackList.pollFirst();
+//            if (next != null) {
+//                Iterator<V> vI = g.adjacentVerticesIterator(next);
+//                while (vI.hasNext()) {
+//                    if (whiteList.remove(vI.next())) {
+//                        blackList.offerFirst(vI.next());
+//                    }
+//                }
+//            } else {
+//                next = whiteList.iterator().next();
+//                Iterator<V> vI = g.adjacentVerticesIterator(next);
+//                while (vI.hasNext()) {
+//                    blackList.offerFirst(vI.next());
+//                }
+//            }
+//            return next;
+//        }
     }
 
     public static void main(String[] args) {
