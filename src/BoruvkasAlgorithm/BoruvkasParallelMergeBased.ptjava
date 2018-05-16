@@ -11,6 +11,23 @@ import BoruvkasAlgorithm.Graph.GraphPresenter;
 import BoruvkasAlgorithm.Graph.MinimumSpanningTree;
 
 public class BoruvkasParallelMergeBased {
+	
+	class TaskParams {
+		public TaskParams(Queue<Vertex> work, MergeableGraph graph, BasicUndirectedGraph<Vertex, UndirectedEdge<Vertex>> mst) {
+			this.work = work;
+			this.graph = graph;
+			this.mst = mst;
+		}
+		
+		Queue<Vertex> work;
+		MergeableGraph graph;
+		BasicUndirectedGraph<Vertex, UndirectedEdge<Vertex>> mst;
+	}
+	
+    public static void main (String[] args) {
+        new BoruvkasParallelMergeBased().Run(null, 2);
+    }
+    
     public MinimumSpanningTree Run(MergeableGraph graph, int threads) {
 
     	GraphPresenter graphPresenter = new GraphPresenter(System.out);
@@ -27,7 +44,9 @@ public class BoruvkasParallelMergeBased {
 	            Collections.shuffle(vertices);
 	            Queue<Vertex> work = new ConcurrentLinkedQueue(vertices);
 	        	
-	        	TaskIDGroup tasks = ProcessComponent(work, graph, mst);
+	            TaskParams taskParams = new TaskParams(work, graph, mst);
+	            
+	        	TaskIDGroup tasks = ProcessComponent(taskParams);
 	        	tasks.waitTillFinished();
         	}
         	
@@ -42,10 +61,11 @@ public class BoruvkasParallelMergeBased {
         return mst;
     }
 
-    TASK(2) private void ProcessComponent(Queue<Vertex> work, 
-    		MergeableGraph graph,
-    		BasicUndirectedGraph<Vertex, UndirectedEdge<Vertex>> mst) {
+    TASK(2) private void ProcessComponent(TaskParams taskParams) {
     	Vertex vertToProcess = null;
+    	Queue<Vertex> work = taskParams.work;
+    	MergeableGraph graph = taskParams.graph;
+    	BasicUndirectedGraph<Vertex, UndirectedEdge<Vertex>> mst = taskParams.mst;
     	
 		while (work.size() > 0) {
 			

@@ -10,6 +10,19 @@ import BoruvkasAlgorithm.Graph.GraphPresenter;
 import BoruvkasAlgorithm.Graph.MinimumSpanningTree;
 
 public class BoruvkasParallelComponentBased {
+	
+	class TaskParams {
+		public TaskParams(Queue<UndirectedEdge<Vertex>> edges, ComponentisedGraph graph, Map<Integer, UndirectedEdge<Vertex>> cheapestOutgoingEdges) {
+			this.edges = edges;
+			this.graph = graph;
+			this.cheapestOutgoingEdges = cheapestOutgoingEdges;
+		}
+		
+		Queue<UndirectedEdge<Vertex>> edges;
+		ComponentisedGraph graph;
+		Map<Integer, UndirectedEdge<Vertex>> cheapestOutgoingEdges;
+	}
+	
     public MinimumSpanningTree Run(ComponentisedGraph graph, int threads) {
     	
     	GraphPresenter graphPresenter = new GraphPresenter(System.out);
@@ -21,7 +34,7 @@ public class BoruvkasParallelComponentBased {
             mst.add(v);
         }
         
-        int iteration = 1;
+        //int iteration = 1;
 
         while (graph.sizeComponents() > 1) {
         	
@@ -32,8 +45,8 @@ public class BoruvkasParallelComponentBased {
             Queue<UndirectedEdge<Vertex>> edges = new ConcurrentLinkedQueue<UndirectedEdge<Vertex>>(new ArrayList<UndirectedEdge<Vertex>>(graph.edgesSet()));
             
             try {
-            	
-            	TaskIDGroup tasks = FindCheapestEdges(edges, graph, cheapestOutgoingEdges);
+            	TaskParams taskParams = new TaskParams(edges, graph, cheapestOutgoingEdges);
+            	TaskIDGroup tasks = FindCheapestEdges(taskParams);
             	tasks.waitTillFinished();
             	
             } catch(ExecutionException ex) {
@@ -60,9 +73,11 @@ public class BoruvkasParallelComponentBased {
         return mst;
     }
       
-    TASK(2) private void FindCheapestEdges(Queue<UndirectedEdge<Vertex>> edges, 
-    		ComponentisedGraph graph, 
-    		Map<Integer, UndirectedEdge<Vertex>> cheapestOutgoingEdges) {
+    TASK(2) private void FindCheapestEdges(TaskParams taskParams) {
+    	
+    	Queue<UndirectedEdge<Vertex>> edges = taskParams.edges;
+    	ComponentisedGraph graph = taskParams.graph;
+    	Map<Integer, UndirectedEdge<Vertex>> cheapestOutgoingEdges = taskParams.cheapestOutgoingEdges;
     	
     	UndirectedEdge<Vertex> e = null;
     	
