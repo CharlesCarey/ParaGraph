@@ -4,10 +4,10 @@ import graph.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class BoruvkasSequentialV2 {
+public class BoruvkasSequentialMergeBased {
 
     public static void main (String[] args) {
-        new BoruvkasSequentialV2().Run(new GraphGenerator().Graph2());
+        new BoruvkasSequentialMergeBased().Run(new GraphGenerator().Graph2());
     }
 
     public BasicUndirectedGraph Run(MergeableGraph G) {

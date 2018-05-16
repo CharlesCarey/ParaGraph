@@ -4,10 +4,10 @@ import graph.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BoruvkasSequential {
+public class BoruvkasSequentialComponentBased {
 
     public static void main (String[] args) {
-        new BoruvkasSequential().Run(new GraphGenerator().GetGridGraph(3, 3, 1, 100));
+        new BoruvkasSequentialComponentBased().Run(new GraphGenerator().GetGridGraph(3, 3, 1, 100));
     }
 
     public BasicUndirectedGraph Run(ComponentisedGraph G) {

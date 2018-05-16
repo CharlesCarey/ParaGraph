@@ -8,13 +8,13 @@ import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.Lock;
 
-public class BoruvkasParallel {
+public class BoruvkasParallelMergeBased {
 
 	private MergeableGraph _graph;
 	private BasicUndirectedGraph<Vertex, UndirectedEdge<Vertex>> _mst;
 	
     public static void main (String[] args) {
-        new BoruvkasParallel().Run(new GraphGenerator().GetMergeableGridGraph(10, 10, 1, 100));
+        new BoruvkasParallelMergeBased().Run(new GraphGenerator().GetMergeableGridGraph(10, 10, 1, 100));
     }
 
     public BasicUndirectedGraph Run(MergeableGraph G) {
