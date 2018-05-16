@@ -62,7 +62,7 @@ public class BFSSequential {
         graph.add(new BasicSimpleEdge( H.name() + I.name(), H, I,true));
 
 
-        new BFSSequential().run(graph, vertices[0]);
+        new BFSParallelisable().run(graph, vertices[0]);
     }
 
 }
