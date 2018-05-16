@@ -2,12 +2,13 @@ package bfs;
 
 import graph.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class BFSSequential {
 
     public void run(Graph graph, Vertex source) {
         Queue<Vertex> waitlist = new LinkedList<>();
-        HashMap<Vertex, Integer> distance = new HashMap();
+        ConcurrentHashMap<Vertex, Integer> distance = new ConcurrentHashMap();
         distance.put(source, 0);
         waitlist.add(source);
 
@@ -29,40 +30,26 @@ public class BFSSequential {
 
     public static void main(String[] args) {
         BasicDirectedAcyclicGraph graph = new BasicDirectedAcyclicGraph("graph");
-        String[] labels = {"A", "B", "C", "D", "E"};
-        BasicVertex[] vertices = new BasicVertex[5];
-
-        int i = 0;
-        for (String s : labels) {
-            vertices[i] = new BasicVertex(s);
-            i++;
-        }
-
-        for (i = 0; i < 4; i++) {
-            if (i < 5) {
-                BasicVertex x = vertices[i];
-                BasicVertex y = vertices[i + 1];
-                graph.add(x);
-                graph.add(y);
-                graph.add(new BasicSimpleEdge(x.name() + y.name(), x, y, true));
+        BasicVertex source = new BasicVertex(0 + "");
+        graph.add(source);
+        for (int i = 1; i < 5; i++) {
+            BasicVertex layer1 = new BasicVertex(i + "");
+            graph.add(layer1);
+            graph.add(new BasicSimpleEdge(source.name() + layer1.name(), source, layer1, true));
+            for (int j = 1; j < 5; j++) {
+                BasicVertex layer2 = new BasicVertex(i + "" + j);
+                graph.add(layer2);
+                graph.add(new BasicSimpleEdge(layer1.name() + layer2.name(), layer1, layer2, true));
+                for (int k = 1; k < 5; k++) {
+                    BasicVertex layer3 = new BasicVertex(i + "" + j + "" + k);
+                    graph.add(layer3);
+                    graph.add(new BasicSimpleEdge(layer2.name() + layer3.name(), layer2, layer3, true));
+                }
+                }
             }
-        }
-
-        BasicVertex G = new BasicVertex("G");
-        BasicVertex H = new BasicVertex("H");
-        BasicVertex I = new BasicVertex("I");
-        graph.add(G);
-        graph.add(H);
-        graph.add(I);
-
-        graph.add(new BasicSimpleEdge(vertices[0].name() + G.name(), vertices[0], G, true));
-        graph.add(new BasicSimpleEdge(vertices[0].name() + H.name(), vertices[0], H, true));
-
-        graph.add(new BasicSimpleEdge( G.name() + I.name(), G, I,true));
-        graph.add(new BasicSimpleEdge( H.name() + I.name(), H, I,true));
 
 
-        new BFSParallelisable().run(graph, vertices[0]);
+        new BFSSequential().run(graph, source);
     }
 
 }
