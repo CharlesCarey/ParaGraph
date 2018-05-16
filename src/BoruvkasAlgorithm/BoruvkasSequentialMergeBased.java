@@ -1,25 +1,17 @@
 package BoruvkasAlgorithm;
-import graph.*;
 
+import graph.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import BoruvkasAlgorithm.Graph.MergeableGraph;
+import BoruvkasAlgorithm.Graph.MinimumSpanningTree;
 
 public class BoruvkasSequentialMergeBased {
-
-    public static void main (String[] args) {
-        new BoruvkasSequentialMergeBased().Run(new GraphGenerator().Graph2());
-    }
-
-    public BasicUndirectedGraph Run(MergeableGraph G) {
-
-        PrintGraph(G);
-
-        BasicUndirectedGraph<Vertex, UndirectedEdge<Vertex>> mst = new BasicUndirectedGraph("MST", "Undirected");
+    public MinimumSpanningTree Run(MergeableGraph G) {
+    	MinimumSpanningTree mst = new MinimumSpanningTree();
 
         for (Vertex v : G.vertices())
             mst.add(v);
-
-        PrintGraph(mst);
 
         List<Vertex> vertices = new ArrayList<>(G.verticesSet());
         Collections.shuffle(vertices);
@@ -30,52 +22,21 @@ public class BoruvkasSequentialMergeBased {
             ProcessComponent(G, vertToProcess, mst);
         }
 
-        System.out.println("MST Found");
-        PrintGraph(mst);
-
-        return new BasicUndirectedGraph("G", "Undirected");
+        return mst;
     }
 
     private void ProcessComponent(MergeableGraph g, Vertex vertToProcess, BasicUndirectedGraph<Vertex, UndirectedEdge<Vertex>> mst) {
+        UndirectedEdge<Vertex> lowestEdge = null;
 
-        System.out.println("processing node " + vertToProcess.name());
-
-        try {
-            PrintGraph(g);
-
-            UndirectedEdge<Vertex> lowestEdge = null;
-
-            for (UndirectedEdge<Vertex> edge : g.incidentEdges(vertToProcess)) {
-                if (lowestEdge == null || edge.weight() < lowestEdge.weight()) {
-                    lowestEdge = edge;
-                }
+        for (UndirectedEdge<Vertex> edge : g.incidentEdges(vertToProcess)) {
+            if (lowestEdge == null || edge.weight() < lowestEdge.weight()) {
+                lowestEdge = edge;
             }
-
-            System.out.println("merge edge " + lowestEdge.name());
-
-            g.mergeAdjacentVertices(lowestEdge, vertToProcess);
-
-            UndirectedEdge<Vertex> originalEdge = g.getOriginalEdge(lowestEdge);
-            mst.add(originalEdge);
-
-        } catch(GraphMergeException ex) {
-            System.out.println(ex.getMessage());
         }
-    }
 
-    private void PrintGraph(BasicUndirectedGraph<Vertex, UndirectedEdge<Vertex>> G) {
-        System.out.println("================================================");
-        System.out.println("# of vertices: " + G.sizeVertices());
-        System.out.println("# of edges: " + G.sizeEdges());
-        System.out.println();
+        g.mergeAdjacentVertices(lowestEdge, vertToProcess);
 
-        for (UndirectedEdge<Vertex> e : G.edges())
-            System.out.println(FormatEdge(e));
-
-        System.out.println();
-    }
-
-    private String FormatEdge(UndirectedEdge<Vertex> e) {
-        return String.format("{%2s}----%2s----{%2s}", e.first().name(), e.weight(), e.second().name());
+        UndirectedEdge<Vertex> originalEdge = g.getOriginalEdge(lowestEdge);
+        mst.add(originalEdge);
     }
 }

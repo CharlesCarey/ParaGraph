@@ -1,35 +1,32 @@
 package BoruvkasAlgorithm;
-import graph.*;
 
+import graph.*;
 import java.util.HashMap;
 import java.util.Map;
+import BoruvkasAlgorithm.Graph.ComponentisedGraph;
+import BoruvkasAlgorithm.Graph.GraphPresenter;
+import BoruvkasAlgorithm.Graph.MinimumSpanningTree;
 
 public class BoruvkasSequentialComponentBased {
+    public MinimumSpanningTree Run(ComponentisedGraph graph) {
 
-    public static void main (String[] args) {
-        new BoruvkasSequentialComponentBased().Run(new GraphGenerator().GetGridGraph(3, 3, 1, 100));
-    }
+    	GraphPresenter graphPresenter = new GraphPresenter(System.out);
+    	graphPresenter.PrintGraph("Input Graph", graph);
 
-    public BasicUndirectedGraph Run(ComponentisedGraph G) {
+    	MinimumSpanningTree mst = new MinimumSpanningTree();
 
-        PrintGraph(G);
-
-        BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> mst = new BasicUndirectedGraph("MST", "Undirected");
-
-        for (BasicVertex v : G.vertices())
+        for (Vertex v : graph.vertices())
             mst.add(v);
 
-        PrintGraph(mst);
+        while (graph.sizeComponents() > 1) {
 
-        while (G.sizeComponents() > 1) {
+            Map<Integer, UndirectedEdge<Vertex>> cheapestOutgoingEdge = new HashMap<Integer, UndirectedEdge<Vertex>>();
 
-            Map<Integer, BasicSimpleEdge<BasicVertex>> cheapestOutgoingEdge = new HashMap<>();
-
-            for (BasicSimpleEdge<BasicVertex> e : G.edges()) {
-                BasicVertex v1 = e.to();
-                BasicVertex v2 = e.from();
-                int v1Component = G.getVertexComponentTag(v1);
-                int v2Component = G.getVertexComponentTag(v2);
+            for (UndirectedEdge<Vertex> e : graph.edges()) {
+                Vertex v1 = e.first();
+                Vertex v2 = e.second();
+                int v1Component = graph.getVertexComponentTag(v1);
+                int v2Component = graph.getVertexComponentTag(v2);
 
                 if (v1Component != v2Component) {
                     if (!cheapestOutgoingEdge.containsKey(v1Component) || cheapestOutgoingEdge.get(v1Component).weight() > e.weight()) {
@@ -46,30 +43,14 @@ public class BoruvkasSequentialComponentBased {
             	System.out.println(String.format("Component: %s; Edge: %s", key, cheapestOutgoingEdge.get(key).name()));
             }
 
-            for (BasicSimpleEdge<BasicVertex> e : cheapestOutgoingEdge.values()) {
-                if (G.connectComponentsAlongEdge(e))
+            for (UndirectedEdge<Vertex> e : cheapestOutgoingEdge.values()) {
+                if (graph.connectComponentsAlongEdge(e))
                     mst.add(e);
             }
         }
 
-        PrintGraph(mst);
+        graphPresenter.PrintGraph("Input Graph", mst);
 
-        return new BasicUndirectedGraph("G", "Undirected");
-    }
-
-    private void PrintGraph(BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> G) {
-        System.out.println("================================================");
-        System.out.println("# of vertices: " + G.sizeVertices());
-        System.out.println("# of edges: " + G.sizeEdges());
-        System.out.println();
-
-        for (BasicSimpleEdge<BasicVertex> e : G.edges())
-            System.out.println(FormatEdge(e));
-
-        System.out.println();
-    }
-
-    private String FormatEdge(BasicSimpleEdge<BasicVertex> e) {
-        return String.format("{%2s}----%2s----{%2s}", e.from().name(), e.weight(), e.to().name());
+        return mst;
     }
 }

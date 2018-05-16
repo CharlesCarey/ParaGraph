@@ -3,41 +3,31 @@ package BoruvkasAlgorithm;
 import graph.*;
 import pt.runtime.CurrentTask;
 import pt.runtime.TaskIDGroup;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.Lock;
+import BoruvkasAlgorithm.Graph.MergeableGraph;
+import BoruvkasAlgorithm.Graph.GraphPresenter;
+import BoruvkasAlgorithm.Graph.MinimumSpanningTree;
 
 public class BoruvkasParallelMergeBased {
+    public MinimumSpanningTree Run(MergeableGraph graph, int threads) {
 
-	private MergeableGraph _graph;
-	private BasicUndirectedGraph<Vertex, UndirectedEdge<Vertex>> _mst;
-	
-    public static void main (String[] args) {
-        new BoruvkasParallelMergeBased().Run(new GraphGenerator().GetMergeableGridGraph(10, 10, 1, 100));
-    }
+    	GraphPresenter graphPresenter = new GraphPresenter(System.out);
+    	MinimumSpanningTree mst = new MinimumSpanningTree();
 
-    public BasicUndirectedGraph Run(MergeableGraph G) {
-
-    	_graph = G;
-    	
-        PrintGraph(_graph);
-
-        _mst = new BasicUndirectedGraph("MST", "Undirected");
-
-        for (Vertex v : _graph.vertices())
-            _mst.add(v);
-
-        PrintGraph(_mst);
+        for (Vertex v : graph.vertices()) {
+            mst.add(v);
+        }
         
         try {
         	
-        	while (_graph.sizeVertices() > 1) {
-	        	List<Vertex> vertices = new ArrayList(_graph.verticesSet());
+        	while (graph.sizeVertices() > 1) {
+	        	List<Vertex> vertices = new ArrayList(graph.verticesSet());
 	            Collections.shuffle(vertices);
 	            Queue<Vertex> work = new ConcurrentLinkedQueue(vertices);
 	        	
-	        	TaskIDGroup tasks = ProcessComponent(work);
+	        	TaskIDGroup tasks = ProcessComponent(work, graph, mst);
 	        	tasks.waitTillFinished();
         	}
         	
@@ -47,13 +37,14 @@ public class BoruvkasParallelMergeBased {
         	System.out.println("Interrupted Exception");
         }
 
-        System.out.println("MST Found");
-        PrintGraph(_mst);
+        graphPresenter.PrintGraph("MST Found", mst);
 
-        return new BasicUndirectedGraph("G", "Undirected");
+        return mst;
     }
 
-    TASK(2) private void ProcessComponent(Queue<Vertex> work) {
+    TASK(2) private void ProcessComponent(Queue<Vertex> work, 
+    		MergeableGraph graph,
+    		BasicUndirectedGraph<Vertex, UndirectedEdge<Vertex>> mst) {
     	Vertex vertToProcess = null;
     	
 		while (work.size() > 0) {
@@ -62,13 +53,13 @@ public class BoruvkasParallelMergeBased {
 			
 			Lock vertLock;
 			
-			if (_graph.TryGetVertexLock(vertToProcess, CurrentTask.relativeID())) {
+			if (graph.TryGetVertexLock(vertToProcess, CurrentTask.relativeID())) {
 		        try {
 		        	System.out.println("ID: " + CurrentTask.relativeID() + "; Processing: " + vertToProcess.name());		
 
 		            UndirectedEdge<Vertex> lowestEdge = null;
 		
-		            for (UndirectedEdge<Vertex> edge : _graph.incidentEdges(vertToProcess)) {
+		            for (UndirectedEdge<Vertex> edge : graph.incidentEdges(vertToProcess)) {
 		                if (lowestEdge == null || edge.weight() < lowestEdge.weight()) {
 		                    lowestEdge = edge;
 		                }
@@ -76,40 +67,21 @@ public class BoruvkasParallelMergeBased {
 		
 		            //System.out.println("ID: " + CurrentTask.relativeID() + "; Selected: " + lowestEdge.name());
 		
-		            if (lowestEdge != null && _graph.TryGetVertexLock(lowestEdge.other(vertToProcess), CurrentTask.relativeID())) {
+		            if (lowestEdge != null && graph.TryGetVertexLock(lowestEdge.other(vertToProcess), CurrentTask.relativeID())) {
 		            	try {
-				            _graph.mergeAdjacentVertices(lowestEdge, vertToProcess);
+		            		graph.mergeAdjacentVertices(lowestEdge, vertToProcess);
 				            System.out.println("Add edge: " + lowestEdge.name());
-				            UndirectedEdge<Vertex> originalEdge = _graph.getOriginalEdge(lowestEdge);
+				            UndirectedEdge<Vertex> originalEdge = graph.getOriginalEdge(lowestEdge);
 				            
-				            _mst.add(originalEdge);
+				            mst.add(originalEdge);
 		            	} finally {
-		            		_graph.ReleaseLock(lowestEdge.other(vertToProcess), CurrentTask.relativeID());
+		            		graph.ReleaseLock(lowestEdge.other(vertToProcess), CurrentTask.relativeID());
 		            	}
 		            }
-		            
-		        } catch (GraphMergeException ex) {	        			        	
-		            System.out.println(ex.getMessage());
 		        } finally {
-		        	_graph.ReleaseLock(vertToProcess, CurrentTask.relativeID());
+		        	graph.ReleaseLock(vertToProcess, CurrentTask.relativeID());
 		        }
 			}
 		}
-    }
-
-    private void PrintGraph(BasicUndirectedGraph<Vertex, UndirectedEdge<Vertex>> G) {
-        System.out.println("================================================");
-        System.out.println("# of vertices: " + G.sizeVertices());
-        System.out.println("# of edges: " + G.sizeEdges());
-        System.out.println();
-
-        for (UndirectedEdge<Vertex> e : G.edges())
-            System.out.println(FormatEdge(e));
-
-        System.out.println();
-    }
-
-    private String FormatEdge(UndirectedEdge<Vertex> e) {
-        return String.format("{%2s}----%2s----{%2s}", e.first().name(), e.weight(), e.second().name());
     }
 }

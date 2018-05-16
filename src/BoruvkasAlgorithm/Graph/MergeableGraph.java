@@ -1,21 +1,18 @@
-package BoruvkasAlgorithm;
-import graph.*;
+package BoruvkasAlgorithm.Graph;
 
+import graph.*;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import BoruvkasAlgorithm.Exceptions.GraphMergeException;
 
 public class MergeableGraph extends BasicUndirectedGraph<Vertex, UndirectedEdge<Vertex>> {
 
     private final Map<UndirectedEdge<Vertex>, UndirectedEdge<Vertex>> _equivalentEdgeMap = new HashMap<>();
     private final Map<Vertex, Lock> _vertexLocks = new HashMap<>();
     
-    public MergeableGraph(String name) {
-        super(name);
-    }
-
-    public MergeableGraph(String name, String type) {
-        super(name, type);
+    public MergeableGraph() {
+    	super("G", "Undirected");
     }
 
     public boolean add(Vertex v) {

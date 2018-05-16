@@ -1,6 +1,9 @@
 package BoruvkasAlgorithm.Exceptions;
+
 public class GraphInputException extends RuntimeException {
-    public GraphInputException(String message) {
+	private static final long serialVersionUID = -4750056735889046818L;
+
+	public GraphInputException(String message) {
         super(message);
     }
 }
