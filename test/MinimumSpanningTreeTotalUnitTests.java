@@ -1,3 +1,4 @@
+
 import graph.BasicUndirectedGraph;
 import graph.UndirectedEdge;
 import graph.Vertex;
@@ -18,15 +19,11 @@ import BoruvkasAlgorithm.Graph.Generator.MergeableGraphGenerator;
 import BoruvkasAlgorithm.BoruvkasParallelComponentBased;
 import BoruvkasAlgorithm.BoruvkasParallelMergeBased;
 
-public class MinimumSpanningTreeUnitTest {
+public class MinimumSpanningTreeTotalUnitTests {
     @Test
-    public void ComponentisedGridGraphCorrectness() {
-        ComponentisedGraph inputGraphSequential = new ComponentisedGraphGenerator(1L).GenerateGridGraph(100, 100, 1, 100);
-        ComponentisedGraph inputGraphParallel = new ComponentisedGraphGenerator(1L).GenerateGridGraph(100, 100, 1, 100);
-        
-        GraphPresenter graphPresenter = new GraphPresenter(System.out);
-    	graphPresenter.PrintGraph("I1", inputGraphSequential);
-    	graphPresenter.PrintGraph("I2", inputGraphParallel);
+    public void ComponentisedTotalGraphCorrectness() {
+        ComponentisedGraph inputGraphSequential = new ComponentisedGraphGenerator(1L).GenerateTotalGraph(1000, 1, 100);
+        ComponentisedGraph inputGraphParallel = new ComponentisedGraphGenerator(1L).GenerateTotalGraph(1000, 1, 100);
         
         BoruvkasSequentialComponentBased algSequential = new BoruvkasSequentialComponentBased();
         BoruvkasParallelComponentBased algParallel = new BoruvkasParallelComponentBased();
@@ -38,9 +35,9 @@ public class MinimumSpanningTreeUnitTest {
     }
     
     @Test
-    public void MergeableGridGraphCorrectness() {
-    	MergeableGraph inputGraphSequential = new MergeableGraphGenerator(1L).GenerateGridGraph(100, 100, 1, 100);
-    	MergeableGraph inputGraphParallel = new MergeableGraphGenerator(1L).GenerateGridGraph(100, 100, 1, 100);
+    public void MergeableTotalGraphCorrectness() {
+    	MergeableGraph inputGraphSequential = new MergeableGraphGenerator(1L).GenerateTotalGraph(200, 1, 100);
+    	MergeableGraph inputGraphParallel = new MergeableGraphGenerator(1L).GenerateTotalGraph(200, 1, 100);
         
     	BoruvkasSequentialMergeBased algSequential = new BoruvkasSequentialMergeBased();
         BoruvkasParallelMergeBased algParallel = new BoruvkasParallelMergeBased();
@@ -52,31 +49,31 @@ public class MinimumSpanningTreeUnitTest {
     }
     
     @Test
-    public void SequentialMergeableGridGraphCorrectness() {
-    	MergeableGraph inputGraphSequential = new MergeableGraphGenerator(1L).GenerateGridGraph(100, 100, 1, 100);
+    public void SequentialMergeableTotalGraphSpeed() {
+    	MergeableGraph inputGraphSequential = new MergeableGraphGenerator(1L).GenerateTotalGraph(200, 1, 100);
     	BoruvkasSequentialMergeBased algSequential = new BoruvkasSequentialMergeBased();
         MinimumSpanningTree mstSequential = algSequential.Run(inputGraphSequential);
     }
     
     @Test
-    public void ParallelMergeableGridGraphCorrectness() {
-    	MergeableGraph inputGraphParallel = new MergeableGraphGenerator(1L).GenerateGridGraph(100, 100, 1, 100);    
+    public void ParallelMergeableTotalGraphSpeed() {
+    	MergeableGraph inputGraphParallel = new MergeableGraphGenerator(1L).GenerateTotalGraph(200, 1, 100);    
         BoruvkasParallelMergeBased algParallel = new BoruvkasParallelMergeBased(); 
-        MinimumSpanningTree mstParallel = algParallel.Run(inputGraphParallel, 2);
+        MinimumSpanningTree mstParallel = algParallel.Run(inputGraphParallel, 4);
     }
     
     @Test
-    public void SequentialComponentisedGridGraphCorrectness() {
-    	ComponentisedGraph inputGraphSequential = new ComponentisedGraphGenerator(1L).GenerateGridGraph(100, 100, 1, 100);
+    public void SequentialComponentisedTotalGraphSpeed() {
+    	ComponentisedGraph inputGraphSequential = new ComponentisedGraphGenerator(1L).GenerateTotalGraph(200, 1, 100);
     	BoruvkasSequentialComponentBased algSequential = new BoruvkasSequentialComponentBased();
         MinimumSpanningTree mstSequential = algSequential.Run(inputGraphSequential);
     }
     
     @Test
-    public void ParallelComponentisedGridGraphCorrectness() {
-    	ComponentisedGraph inputGraphParallel = new ComponentisedGraphGenerator(1L).GenerateGridGraph(100, 100, 1, 100);    
+    public void ParallelComponentisedTotalGraphSpeed() {
+    	ComponentisedGraph inputGraphParallel = new ComponentisedGraphGenerator(1L).GenerateTotalGraph(200, 1, 100);    
     	BoruvkasParallelComponentBased algParallel = new BoruvkasParallelComponentBased(); 
-        MinimumSpanningTree mstParallel = algParallel.Run(inputGraphParallel, 2);
+        MinimumSpanningTree mstParallel = algParallel.Run(inputGraphParallel, 4);
     }
     
     private boolean areGraphsEquivalent(BasicUndirectedGraph<Vertex, UndirectedEdge<Vertex>> g1, BasicUndirectedGraph<Vertex, UndirectedEdge<Vertex>> g2) {
@@ -129,3 +126,4 @@ public class MinimumSpanningTreeUnitTest {
     	return copy;
     }
 }
+

@@ -23,10 +23,14 @@ public class BoruvkasParallelComponentBased {
 		Map<Integer, UndirectedEdge<Vertex>> cheapestOutgoingEdges;
 	}
 	
+	private int _threads = 1;
+	
     public MinimumSpanningTree Run(ComponentisedGraph graph, int threads) {
     	
+    	_threads = threads;
+    	
     	GraphPresenter graphPresenter = new GraphPresenter(System.out);
-    	graphPresenter.PrintGraph("Input Graph", graph);
+    	//graphPresenter.PrintGraph("Input Graph", graph);
 
     	MinimumSpanningTree mst = new MinimumSpanningTree();
 
@@ -38,7 +42,7 @@ public class BoruvkasParallelComponentBased {
 
         while (graph.sizeComponents() > 1) {
         	
-        	//System.out.println(String.format("============== START ITERATION %s ==============\n", iteration++));
+        	////System.out.println(String.format("============== START ITERATION %s ==============\n", iteration++));
         			
         	Map<Integer, UndirectedEdge<Vertex>> cheapestOutgoingEdges = new ConcurrentHashMap<Integer, UndirectedEdge<Vertex>>();
 
@@ -50,14 +54,14 @@ public class BoruvkasParallelComponentBased {
             	tasks.waitTillFinished();
             	
             } catch(ExecutionException ex) {
-                System.out.println("Execution Exception");
+                //System.out.println("Execution Exception");
             } catch(InterruptedException ex) {
-            	System.out.println("Interrupted Exception");
+            	//System.out.println("Interrupted Exception");
             }
           
-            System.out.println("\nCheapest Edges:");
+            //System.out.println("\nCheapest Edges:");
             for (Integer key : cheapestOutgoingEdges.keySet()) {
-            	System.out.println(String.format("Component: %s; Edge: %s", key, cheapestOutgoingEdges.get(key).name()));
+            	//System.out.println(String.format("Component: %s; Edge: %s", key, cheapestOutgoingEdges.get(key).name()));
             }
 
             for (UndirectedEdge<Vertex> e : cheapestOutgoingEdges.values()) {
@@ -65,15 +69,15 @@ public class BoruvkasParallelComponentBased {
                     mst.add(e);
             }
             
-            System.out.println();
+            //System.out.println();
         }
 
-        graphPresenter.PrintGraph("MST Found", mst);
+        //graphPresenter.PrintGraph("MST Found", mst);
 
         return mst;
     }
       
-    TASK(2) private void FindCheapestEdges(TaskParams taskParams) {
+    TASK(_threads) private void FindCheapestEdges(TaskParams taskParams) {
     	
     	Queue<UndirectedEdge<Vertex>> edges = taskParams.edges;
     	ComponentisedGraph graph = taskParams.graph;
@@ -83,7 +87,7 @@ public class BoruvkasParallelComponentBased {
     	
     	while ((e = edges.poll()) != null) {
     		
-    		System.out.println("ID: " + CurrentTask.relativeID() + "; Processing: " + e.name());		
+    		//System.out.println("ID: " + CurrentTask.relativeID() + "; Processing: " + e.name());		
 
     		Vertex v1 = e.first();
     		Vertex v2 = e.second();

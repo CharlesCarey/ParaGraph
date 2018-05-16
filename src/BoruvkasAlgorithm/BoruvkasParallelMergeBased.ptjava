@@ -28,8 +28,12 @@ public class BoruvkasParallelMergeBased {
         new BoruvkasParallelMergeBased().Run(null, 2);
     }
     
+    private int _threads;
+    
     public MinimumSpanningTree Run(MergeableGraph graph, int threads) {
 
+    	_threads = threads;
+    	
     	GraphPresenter graphPresenter = new GraphPresenter(System.out);
     	MinimumSpanningTree mst = new MinimumSpanningTree();
 
@@ -51,17 +55,17 @@ public class BoruvkasParallelMergeBased {
         	}
         	
         } catch(ExecutionException ex) {
-            System.out.println("Execution Exception");
+            //System.out.println("Execution Exception");
         } catch(InterruptedException ex) {
-        	System.out.println("Interrupted Exception");
+        	//System.out.println("Interrupted Exception");
         }
 
-        graphPresenter.PrintGraph("MST Found", mst);
+        //graphPresenter.PrintGraph("MST Found", mst);
 
         return mst;
     }
 
-    TASK(2) private void ProcessComponent(TaskParams taskParams) {
+    TASK(_threads) private void ProcessComponent(TaskParams taskParams) {
     	Vertex vertToProcess = null;
     	Queue<Vertex> work = taskParams.work;
     	MergeableGraph graph = taskParams.graph;
@@ -75,7 +79,7 @@ public class BoruvkasParallelMergeBased {
 			
 			if (graph.TryGetVertexLock(vertToProcess, CurrentTask.relativeID())) {
 		        try {
-		        	System.out.println("ID: " + CurrentTask.relativeID() + "; Processing: " + vertToProcess.name());		
+		        	//System.out.println("ID: " + CurrentTask.relativeID() + "; Processing: " + vertToProcess.name());		
 
 		            UndirectedEdge<Vertex> lowestEdge = null;
 		
@@ -85,12 +89,12 @@ public class BoruvkasParallelMergeBased {
 		                }
 		            }
 		
-		            //System.out.println("ID: " + CurrentTask.relativeID() + "; Selected: " + lowestEdge.name());
+		            ////System.out.println("ID: " + CurrentTask.relativeID() + "; Selected: " + lowestEdge.name());
 		
 		            if (lowestEdge != null && graph.TryGetVertexLock(lowestEdge.other(vertToProcess), CurrentTask.relativeID())) {
 		            	try {
 		            		graph.mergeAdjacentVertices(lowestEdge, vertToProcess);
-				            System.out.println("Add edge: " + lowestEdge.name());
+				            //System.out.println("Add edge: " + lowestEdge.name());
 				            UndirectedEdge<Vertex> originalEdge = graph.getOriginalEdge(lowestEdge);
 				            
 				            mst.add(originalEdge);

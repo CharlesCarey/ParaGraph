@@ -11,7 +11,7 @@ public class BoruvkasSequentialComponentBased {
     public MinimumSpanningTree Run(ComponentisedGraph graph) {
 
     	GraphPresenter graphPresenter = new GraphPresenter(System.out);
-    	graphPresenter.PrintGraph("Input Graph", graph);
+    	//graphPresenter.PrintGraph("Input Graph", graph);
 
     	MinimumSpanningTree mst = new MinimumSpanningTree();
 
@@ -40,7 +40,7 @@ public class BoruvkasSequentialComponentBased {
             }
             
             for (Integer key : cheapestOutgoingEdge.keySet()) {
-            	System.out.println(String.format("Component: %s; Edge: %s", key, cheapestOutgoingEdge.get(key).name()));
+            	//System.out.println(String.format("Component: %s; Edge: %s", key, cheapestOutgoingEdge.get(key).name()));
             }
 
             for (UndirectedEdge<Vertex> e : cheapestOutgoingEdge.values()) {
@@ -49,7 +49,7 @@ public class BoruvkasSequentialComponentBased {
             }
         }
 
-        graphPresenter.PrintGraph("Input Graph", mst);
+        //graphPresenter.PrintGraph("Input Graph", mst);
 
         return mst;
     }
