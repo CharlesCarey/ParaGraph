@@ -42,7 +42,6 @@ public class BoruvkasSequential {
                 }
             }
             
-            System.out.println("Cheapest Edges:b");
             for (Integer key : cheapestOutgoingEdge.keySet()) {
             	System.out.println(String.format("Component: %s; Edge: %s", key, cheapestOutgoingEdge.get(key).name()));
             }

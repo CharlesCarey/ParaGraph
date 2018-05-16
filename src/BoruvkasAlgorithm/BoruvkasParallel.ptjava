@@ -14,7 +14,7 @@ public class BoruvkasParallel {
 	private BasicUndirectedGraph<Vertex, UndirectedEdge<Vertex>> _mst;
 	
     public static void main (String[] args) {
-        new BoruvkasParallel().Run(new GraphGenerator().GetMergeableGridGraph(3, 3, 1, 100));
+        new BoruvkasParallel().Run(new GraphGenerator().GetMergeableGridGraph(10, 10, 1, 100));
     }
 
     public BasicUndirectedGraph Run(MergeableGraph G) {
@@ -29,15 +29,17 @@ public class BoruvkasParallel {
             _mst.add(v);
 
         PrintGraph(_mst);
-     
-        List<Vertex> vertices = new ArrayList(_graph.verticesSet());
-        Collections.shuffle(vertices);
-        Queue<Vertex> work = new ConcurrentLinkedQueue(vertices);
         
         try {
         	
-        	TaskIDGroup tasks = ProcessComponent(work);
-        	tasks.waitTillFinished();
+        	while (_graph.sizeVertices() > 1) {
+	        	List<Vertex> vertices = new ArrayList(_graph.verticesSet());
+	            Collections.shuffle(vertices);
+	            Queue<Vertex> work = new ConcurrentLinkedQueue(vertices);
+	        	
+	        	TaskIDGroup tasks = ProcessComponent(work);
+	        	tasks.waitTillFinished();
+        	}
         	
         } catch(ExecutionException ex) {
             System.out.println("Execution Exception");
@@ -54,7 +56,7 @@ public class BoruvkasParallel {
     TASK(2) private void ProcessComponent(Queue<Vertex> work) {
     	Vertex vertToProcess = null;
     	
-		while (work.size() > 1) {
+		while (work.size() > 0) {
 			
 			vertToProcess = work.poll();
 			
@@ -72,12 +74,14 @@ public class BoruvkasParallel {
 		                }
 		            }
 		
-		            System.out.println("ID: " + CurrentTask.relativeID() + "; Selected: " + lowestEdge.name());
+		            //System.out.println("ID: " + CurrentTask.relativeID() + "; Selected: " + lowestEdge.name());
 		
-		            if (_graph.TryGetVertexLock(lowestEdge.other(vertToProcess), CurrentTask.relativeID())) {
+		            if (lowestEdge != null && _graph.TryGetVertexLock(lowestEdge.other(vertToProcess), CurrentTask.relativeID())) {
 		            	try {
 				            _graph.mergeAdjacentVertices(lowestEdge, vertToProcess);
+				            System.out.println("Add edge: " + lowestEdge.name());
 				            UndirectedEdge<Vertex> originalEdge = _graph.getOriginalEdge(lowestEdge);
+				            
 				            _mst.add(originalEdge);
 		            	} finally {
 		            		_graph.ReleaseLock(lowestEdge.other(vertToProcess), CurrentTask.relativeID());

@@ -13,6 +13,11 @@ public class GraphGenerator {
 	public GraphGenerator() {
 		_rnd = new Random();
 	}
+	
+	public GraphGenerator(long seed) {
+		_rnd = new Random();
+		_rnd.setSeed(seed);
+	}
 			
 	public MergeableGraph Graph1() {
 		MergeableGraph G = new MergeableGraph("G", "Undirected");
@@ -128,7 +133,7 @@ public class GraphGenerator {
 	public MergeableGraph GetMergeableGridGraph(int rows, int columns, int minEdgeWeight, int maxEdgeWeight) {
 		
 		MergeableGraph G = new MergeableGraph("G", "Undirected");
-		
+
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < columns; j++) {
 				String vertexName = getVertexName(i, j);
@@ -152,8 +157,8 @@ public class GraphGenerator {
 				edgeToRight.setWeight(getEdgeWeight(minEdgeWeight, maxEdgeWeight));
 				edgeToBelow.setWeight(getEdgeWeight(minEdgeWeight, maxEdgeWeight));
 				
-				G.add(edgeToRight);
-				G.add(edgeToBelow);
+				G.add(edgeToRight, true);
+				G.add(edgeToBelow, true);
 			}
 		}
 
