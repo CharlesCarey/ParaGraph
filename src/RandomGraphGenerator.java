@@ -6,19 +6,19 @@ import java.util.Stack;
 
 public class RandomGraphGenerator {
 
-    public List<Vertex> generateVertices(int numOfVertices, int maxWeight) {
-        List<Vertex> vertices = new ArrayList<>();
+    public List<ParentCountVertex> generateVertices(int numOfVertices, int maxWeight) {
+        List<ParentCountVertex> vertices = new ArrayList<>();
 
         for (int i = 0; i < numOfVertices; i++) {
             String name = "v" + i;
-            Vertex v = new BasicVertex(name, (int) Math.random() * maxWeight);
+            ParentCountVertex v = new ParentCountVertex(name, (int) Math.random() * maxWeight);
             vertices.add(v);
         }
 
         return vertices;
     }
 
-    public List<DirectedEdge> generateEdges(List<Vertex> vertices, int maxOutgoingEdges) {
+    public List<DirectedEdge> generateEdges(List<ParentCountVertex> vertices, int maxOutgoingEdges) {
         List<DirectedEdge> edges = new ArrayList<>();
         int edgeCount = 0;
 
@@ -30,8 +30,8 @@ public class RandomGraphGenerator {
             for (int j = 0; j < numOfOutgoingEdges; j++) {
                 Vertex to = from;
 
-                while (to == from || willCreateCycle(edges, from, to)) {
-                    int randomIndex = (int) (Math.random() * numOfVertices);
+                while (to == from) {
+                    int randomIndex = i + (int) (Math.random() * (numOfVertices - i));
                     to = vertices.get(randomIndex);
                 }
 
@@ -44,22 +44,8 @@ public class RandomGraphGenerator {
         return edges;
     }
 
-    public boolean willCreateCycle(List<DirectedEdge> edges, Vertex from, Vertex to) {
-        if (edges.size() <= 0) {
-            return false;
-        }
 
-        Stack<Vertex> seenVertices = new Stack<>();
-        seenVertices.push(edges.get(0).from());
-
-        for (DirectedEdge e : edges) {
-            seenVertices.push(e.to());
-        }
-
-        return seenVertices.contains(from) && seenVertices.contains(to);
-    }
-
-    public BasicDirectedAcyclicGraph buildGraph(List<Vertex> vertices, List<DirectedEdge> edges) {
+    public BasicDirectedAcyclicGraph buildGraph(List<ParentCountVertex> vertices, List<DirectedEdge> edges) {
         BasicDirectedAcyclicGraph graph = new BasicDirectedAcyclicGraph<>("Topological Sort");
 
         for (Vertex v : vertices) {

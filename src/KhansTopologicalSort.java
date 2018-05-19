@@ -8,39 +8,46 @@ public class KhansTopologicalSort {
         KhansTopologicalSort khan = new KhansTopologicalSort();
         RandomGraphGenerator graphGenerator = new RandomGraphGenerator();
 
-        List<Vertex> vertices = graphGenerator.generateVertices(10, 5);
-        List<DirectedEdge> edges = graphGenerator.generateEdges(vertices, 1);
-
-        for (DirectedEdge e : edges) {
-            System.out.println("from: " + e.from().name() + " | to: " + e.to().name());
-        }
-
+        System.out.println("Generating graph");
+        List<ParentCountVertex> vertices = graphGenerator.generateVertices(500000, 3);
+        List<DirectedEdge> edges = graphGenerator.generateEdges(vertices, 20);
         BasicDirectedAcyclicGraph graph = graphGenerator.buildGraph(vertices, edges);
+        System.out.println("Sorting...");
 
+        long before = System.currentTimeMillis();
         List<Vertex> sortedGraph = khan.sort(graph);
+        long after = System.currentTimeMillis();
+        long diff = after - before;
+        System.out.println("seq time: " + diff);
     }
 
     public List<Vertex> sort (BasicDirectedAcyclicGraph graph) {
         List<Vertex> sortedGraph = new ArrayList<>();
         Queue<Vertex> nodesToProcess = new LinkedList<>();
 
-        Iterator<Vertex> it = graph.sources().iterator();
+        Iterator<ParentCountVertex> it = graph.verticesIterator();
         while (it.hasNext()) {
-            Vertex v = it.next();
-            nodesToProcess.add(v);
+            ParentCountVertex v = it.next();
+
+            int numberOfParents = graph.getParents(v).size();
+            v.setParentCount(numberOfParents);
+
+            if (v.isSource()) {
+                nodesToProcess.add(v);
+            }
         }
 
         while (!nodesToProcess.isEmpty()) {
             Vertex v = nodesToProcess.poll();
 
-            Iterator<Vertex> descendentsIterator = graph.descendentsIterator(v);
+            Iterator<ParentCountVertex> childrenIterator = graph.childrenIterator(v);
 
-            graph.remove(v);
             sortedGraph.add(v);
 
-            while (descendentsIterator.hasNext()) {
-                Vertex child = descendentsIterator.next();
-                if (graph.inDegree(child) == 0) {
+            while (childrenIterator.hasNext()) {
+                ParentCountVertex child = childrenIterator.next();
+                child.decrementParentCount();
+                if (child.isSource()) {
                     nodesToProcess.add(child);
                 }
             }
