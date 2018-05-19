@@ -4,9 +4,10 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class PrimsAlgorithm {
+public class PrimsAlgorithmParalleltest {
 
     public static void main (String[] args) {
         //this class executes prims algorithm in sequential and times it
@@ -80,32 +81,23 @@ public class PrimsAlgorithm {
         verticesNotYetCovered.add(eVtx);
         verticesNotYetCovered.add(fVtx);
         verticesNotYetCovered.add(gVtx);
-        
-        PrintGraph(inputGraph);
-        
+
         long start_time = System.nanoTime();
-        BasicUndirectedGraph mst = new PrimsAlgorithm().Run(inputGraph, verticesNotYetCovered);
+        new PrimsAlgorithmParalleltest().Run(inputGraph, verticesNotYetCovered);
         long end_time = System.nanoTime();
-       
-       PrintGraph(mst);
        System.out.println ("Runtime: " + (end_time - start_time)/1000 + "ms");
+
 
     }
 
-    public BasicUndirectedGraph Run(BasicUndirectedGraph inputGraph, HashSet<BasicVertex> verticesNotYetCovered){
+    public void Run(BasicUndirectedGraph inputGraph, HashSet<BasicVertex> verticesNotYetCovered){
 
-        
+        PrintGraph(inputGraph);
 
-        HashMap<String, UndirectedEdge> keyValues = new HashMap<>();
+        ConcurrentHashMap<String, UndirectedEdge> keyValues = new ConcurrentHashMap<>();
         keyValues.put("A", new BasicSimpleEdge("AA", inputGraph.vertexForName("aVtx"), inputGraph.vertexForName("aVtx"), false));
         keyValues.get("A").setWeight(0);
-//
-//        keyValues.put("B", null);
-//        keyValues.put("C", null);
-//        keyValues.put("D", null);
-//        keyValues.put("E", null);
-//        keyValues.put("F", null);
-//        keyValues.put("G", null);
+
 
         BasicUndirectedGraph mst = new BasicUndirectedGraph("mst");
 
@@ -141,27 +133,32 @@ public class PrimsAlgorithm {
             //update key values around newest mst vertex
             /* To be parallelised */
             Iterator<BasicVertex> it = inputGraph.adjacentVerticesIterator(nextVertex);
+            ConcurrentLinkedQueue<UndirectedEdge> adjacentVerticesEdges = new ConcurrentLinkedQueue<UndirectedEdge>();
             
             while(it.hasNext()){
-               BasicVertex v = it.next();
-               UndirectedEdge edge = inputGraph.edgeBetween(nextVertex, v);
-
-//               if(keyValues.get(v.name()) == null) {
-               if(!keyValues.containsKey(v.name())) {
-                    keyValues.put(v.name(), edge);
-               }else{
-                   if (edge.weight() < keyValues.get(v.name()).weight()) {
-                       keyValues.put(v.name(), edge);
-                   }
-               }
+            		adjacentVerticesEdges.add(inputGraph.edgeBetween(nextVertex, it.next()));
             }
+            
+            while(!adjacentVerticesEdges.isEmpty()) {
+            		UndirectedEdge e = adjacentVerticesEdges.poll();
+
+            		if(!keyValues.containsKey(e.second().name())) {
+                    keyValues.put(e.second().name(), e);
+            		}else{
+                   if (e.weight() < keyValues.get(e.second().name()).weight()) {
+                       keyValues.put(e.second().name(), e);
+                   }
+            		}
+            }
+             
            verticesNotYetCovered.remove(nextVertex);
            firstTime =false;
         }
-        return mst;
+        System.out.print("about to print graph");
+        PrintGraph(mst);
     }
-
-    private static void PrintGraph(BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> G) {
+    
+    private void PrintGraph(BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> G) {
         System.out.println("================================================");
         System.out.println("# of vertices: " + G.sizeVertices());
         System.out.println("# of edges: " + G.sizeEdges());
@@ -178,7 +175,7 @@ public class PrimsAlgorithm {
         System.out.println("Minimum Total Edge Weight: " + count);
     }
 
-    private static String FormatEdge(BasicSimpleEdge<BasicVertex> e) {
+    private String FormatEdge(BasicSimpleEdge<BasicVertex> e) {
         return String.format("{%2s}----%2s----{%2s}", e.from().name(), e.weight(), e.to().name());
     }
 }
