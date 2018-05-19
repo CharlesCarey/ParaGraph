@@ -87,46 +87,63 @@ public class PrimsAlgorithm {
 
         PrintGraph(inputGraph);
 
-        HashMap<String, Integer> keyValues = new HashMap<String, Integer>();
-        keyValues.put("A", 0);
-        keyValues.put("B", Integer.MAX_VALUE);
-        keyValues.put("C", Integer.MAX_VALUE);
-        keyValues.put("D", Integer.MAX_VALUE);
-        keyValues.put("E", Integer.MAX_VALUE);
-        keyValues.put("F", Integer.MAX_VALUE);
-        keyValues.put("G", Integer.MAX_VALUE);
+        HashMap<String, UndirectedEdge> keyValues = new HashMap<>();
+        keyValues.put("A", new BasicSimpleEdge("AA", inputGraph.vertexForName("aVtx"), inputGraph.vertexForName("aVtx"), false));
+        keyValues.get("A").setWeight(0);
+
+        keyValues.put("B", null);
+        keyValues.put("C", null);
+        keyValues.put("D", null);
+        keyValues.put("E", null);
+        keyValues.put("F", null);
+        keyValues.put("G", null);
 
         BasicUndirectedGraph mst = new BasicUndirectedGraph("mst");
 
 
+        boolean firstTime = true;
 
         while(!verticesNotYetCovered.isEmpty()){
+
             int minWeight = Integer.MAX_VALUE;
             //find next vertex to add to MST
             BasicVertex nextVertex = null;
+
+            //iterate over vertices to find min key value vertex
             for(BasicVertex v : verticesNotYetCovered){
                 String name = v.name();
-                int weight = keyValues.get(name);
-                if(weight < minWeight){
-                    nextVertex = v;
-                    minWeight = weight;
+                if(keyValues.get(name) != null) {
+                    int weight = keyValues.get(name).weight();
+                    if (weight < minWeight) {
+                        nextVertex = v;
+                        minWeight = weight;
+                    }
                 }
             }
 
             mst.add(nextVertex);
+            if(!firstTime) {
+                UndirectedEdge edge = keyValues.get(nextVertex.name());
+                mst.add(edge);
+            }
+
             //update key values around newest mst vertex
             Iterator<BasicVertex> it = inputGraph.adjacentVerticesIterator(nextVertex);
            while(it.hasNext()){
                BasicVertex v = it.next();
                UndirectedEdge edge = inputGraph.edgeBetween(nextVertex, v);
 
-               if(edge.weight() < keyValues.get(v.name())){
-                   keyValues.put(v.name(), edge.weight());
+               if(keyValues.get(v.name()) == null) {
+                    keyValues.put(v.name(), edge);
+               }else{
+                   if (edge.weight() < keyValues.get(v.name()).weight()) {
+                       keyValues.put(v.name(), edge);
+                   }
                }
 
            }
-
            verticesNotYetCovered.remove(nextVertex);
+           firstTime =false;
         }
 
         PrintGraph(mst);
@@ -139,10 +156,15 @@ public class PrimsAlgorithm {
         System.out.println("# of edges: " + G.sizeEdges());
         System.out.println();
 
-        for (BasicSimpleEdge<BasicVertex> e : G.edges())
+        int count = 0;
+
+        for (BasicSimpleEdge<BasicVertex> e : G.edges()) {
             System.out.println(FormatEdge(e));
+            count += e.weight();
+        }
 
         System.out.println();
+        System.out.println("Minimum Total Edge Weight: " + count);
     }
 
     private String FormatEdge(BasicSimpleEdge<BasicVertex> e) {
