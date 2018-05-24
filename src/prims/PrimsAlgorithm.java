@@ -1,3 +1,4 @@
+package prims;
 import graph.*;
 
 import java.awt.*;
