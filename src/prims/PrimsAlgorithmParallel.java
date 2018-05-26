@@ -34,7 +34,7 @@ public class PrimsAlgorithmParallel {//####[12]####
 //####[14]####
     private ConcurrentLinkedQueue<UndirectedEdge> _adjacentVerticesEdges = new ConcurrentLinkedQueue<UndirectedEdge>();//####[14]####
 //####[15]####
-    private static final Integer GRAPH_SIZE = 100;//####[15]####
+    private static final Integer GRAPH_SIZE = 1000;//####[15]####
 //####[17]####
     public static void main(String[] args) {//####[17]####
         GraphGenerator gg = new GraphGenerator(1);//####[20]####

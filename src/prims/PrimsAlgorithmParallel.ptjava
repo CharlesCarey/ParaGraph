@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class PrimsAlgorithmParallel {
     private ConcurrentHashMap<String, UndirectedEdge> _keyValues  = new ConcurrentHashMap<String, UndirectedEdge>();
     private ConcurrentLinkedQueue<UndirectedEdge> _adjacentVerticesEdges = new ConcurrentLinkedQueue<UndirectedEdge>();
-    private static final Integer GRAPH_SIZE = 100;
+    private static final Integer GRAPH_SIZE = 1000;
     
 	    public static void main (String[] args) {
 	        //this class executes prims algorithm in parallel and times it
