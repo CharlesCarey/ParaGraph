@@ -1,5 +1,6 @@
 package bfs;
 import graph.BasicVertex;
+import graph.Vertex;
 
 public class LayerVertex extends BasicVertex {
     int _layer;
@@ -15,5 +16,4 @@ public class LayerVertex extends BasicVertex {
     public int getLayer(int lay) {
         return _layer;
     }
-
 }

@@ -6,18 +6,18 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class BFSParallel {
-    Queue<Vertex> _waitlist = new LinkedList<Vertex>();
-    HashMap<Integer, Queue<Vertex>> _bags = new HashMap();
-    ConcurrentHashMap<Vertex, Integer> _distance = new ConcurrentHashMap();
+    Queue<LayerVertex> _waitlist = new LinkedList<LayerVertex>();
+    HashMap<Integer, Queue<LayerVertex>> _bags = new HashMap();
+    ConcurrentHashMap<LayerVertex, Integer> _distance = new ConcurrentHashMap();
     Graph _graph;
 
-    public ConcurrentHashMap<Vertex, Integer> run(Graph graph, Vertex source) {
+    public ConcurrentHashMap<LayerVertex, Integer> run(Graph graph, LayerVertex source) {
         _graph = graph;
-        int cores = 4;
+        int cores = 1;
 
         // Initalise bags
         for (int i = 0; i < cores; i++) {
-            _bags.put(i, new LinkedList<Vertex>());
+            _bags.put(i, new LinkedList<LayerVertex>());
         }
 
         _distance.put(source, 0);
@@ -25,13 +25,13 @@ public class BFSParallel {
 
         while (!_waitlist.isEmpty()) {
             // sequential if too small
-            if (_waitlist.size() < cores) {
+            if (_waitlist.size() < cores * 1) {
                 // Process entire level
                 int size = _waitlist.size();
                 for (int i = 0; i < size; i++) {
-                    Vertex current = _waitlist.poll();
-                    Iterable<Vertex> adjacent = graph.adjacentVertices(current);
-                    for (Vertex v : adjacent) {
+                	LayerVertex current = _waitlist.poll();
+                    Iterable<LayerVertex> adjacent = graph.adjacentVertices(current);
+                    for (LayerVertex v : adjacent) {
                         if (!_distance.containsKey(v)) {
                             _distance.put(v, _distance.get(current) + 1);
                             _waitlist.add(v);
@@ -54,9 +54,9 @@ public class BFSParallel {
 	            }
 
                 // Merge _bags
-                Queue<Vertex> newWaitlist = new LinkedList();
+                Queue<LayerVertex> newWaitlist = new LinkedList();
                 for (int i = 0; i < cores; i++) {
-                    Queue<Vertex> bag = _bags.get(i);
+                    Queue<LayerVertex> bag = _bags.get(i);
                     while (!bag.isEmpty()) {
                         newWaitlist.add(bag.poll());
                     }
@@ -70,25 +70,25 @@ public class BFSParallel {
         return _distance;
     }
 
-    private void split(Queue<Vertex> waitlist, HashMap<Integer, Queue<Vertex>> _bags, int cores) {
+    private void split(Queue<LayerVertex> waitlist, HashMap<Integer, Queue<LayerVertex>> _bags, int cores) {
         int size = waitlist.size();
         for (int i = 0; i < size; i++) {
             _bags.get(i % cores).add(_waitlist.poll());
         }
     }
 
-    TASK(4) public void processBag() {
+    TASK(1) public void processBag() {
     	int core = CurrentTask.relativeID();
 //    	System.out.println(core);
         // /Get the bag for the core
-        Queue<Vertex> coreWaitlist = _bags.get(core);
-        Queue<Vertex> nextLevelWaitList = new LinkedList();
+        Queue<LayerVertex> coreWaitlist = _bags.get(core);
+        Queue<LayerVertex> nextLevelWaitList = new LinkedList();
 
 
         while (!coreWaitlist.isEmpty()) {
-            Vertex current = coreWaitlist.poll();
-            Iterable<Vertex> adjacent = _graph.adjacentVertices(current);
-            for (Vertex v : adjacent) {
+        	LayerVertex current = coreWaitlist.poll();
+            Iterable<LayerVertex> adjacent = _graph.adjacentVertices(current);
+            for (LayerVertex v : adjacent) {
                 if (!_distance.containsKey(v)) {
                     _distance.put(v, _distance.get(current) + 1);
                     nextLevelWaitList.add(v);

@@ -25,34 +25,34 @@ public class BFSParallel {//####[8]####
         else //####[8]####
             m.invoke(instance, arg, interResult);//####[8]####
     }//####[8]####
-//####[9]####
-    Queue<Vertex> _waitlist = new LinkedList<Vertex>();//####[9]####
-//####[10]####
-    HashMap<Integer, Queue<Vertex>> _bags = new HashMap();//####[10]####
-//####[11]####
-    ConcurrentHashMap<Vertex, Integer> _distance = new ConcurrentHashMap();//####[11]####
-//####[12]####
+    //####[9]####
+    Queue<LayerVertex> _waitlist = new LinkedList<LayerVertex>();//####[9]####
+    //####[10]####
+    HashMap<Integer, Queue<LayerVertex>> _bags = new HashMap();//####[10]####
+    //####[11]####
+    ConcurrentHashMap<LayerVertex, Integer> _distance = new ConcurrentHashMap();//####[11]####
+    //####[12]####
     Graph _graph;//####[12]####
-//####[14]####
-    public ConcurrentHashMap<Vertex, Integer> run(Graph graph, Vertex source) {//####[14]####
+    //####[14]####
+    public ConcurrentHashMap<LayerVertex, Integer> run(Graph graph, LayerVertex source) {//####[14]####
         _graph = graph;//####[15]####
-        int cores = 4;//####[16]####
+        int cores = 1;//####[16]####
         for (int i = 0; i < cores; i++) //####[19]####
         {//####[19]####
-            _bags.put(i, new LinkedList<Vertex>());//####[20]####
+            _bags.put(i, new LinkedList<LayerVertex>());//####[20]####
         }//####[21]####
         _distance.put(source, 0);//####[23]####
         _waitlist.add(source);//####[24]####
         while (!_waitlist.isEmpty()) //####[26]####
         {//####[26]####
-            if (_waitlist.size() < cores) //####[28]####
+            if (_waitlist.size() < cores * 1) //####[28]####
             {//####[28]####
                 int size = _waitlist.size();//####[30]####
                 for (int i = 0; i < size; i++) //####[31]####
                 {//####[31]####
-                    Vertex current = _waitlist.poll();//####[32]####
-                    Iterable<Vertex> adjacent = graph.adjacentVertices(current);//####[33]####
-                    for (Vertex v : adjacent) //####[34]####
+                    LayerVertex current = _waitlist.poll();//####[32]####
+                    Iterable<LayerVertex> adjacent = graph.adjacentVertices(current);//####[33]####
+                    for (LayerVertex v : adjacent) //####[34]####
                     {//####[34]####
                         if (!_distance.containsKey(v)) //####[35]####
                         {//####[35]####
@@ -71,10 +71,10 @@ public class BFSParallel {//####[8]####
                 } catch (InterruptedException ex) {//####[52]####
                     System.out.println("Interrupted Exception");//####[53]####
                 }//####[54]####
-                Queue<Vertex> newWaitlist = new LinkedList();//####[57]####
+                Queue<LayerVertex> newWaitlist = new LinkedList();//####[57]####
                 for (int i = 0; i < cores; i++) //####[58]####
                 {//####[58]####
-                    Queue<Vertex> bag = _bags.get(i);//####[59]####
+                    Queue<LayerVertex> bag = _bags.get(i);//####[59]####
                     while (!bag.isEmpty()) //####[60]####
                     {//####[60]####
                         newWaitlist.add(bag.poll());//####[61]####
@@ -85,21 +85,21 @@ public class BFSParallel {//####[8]####
         }//####[68]####
         return _distance;//####[70]####
     }//####[71]####
-//####[73]####
-    private void split(Queue<Vertex> waitlist, HashMap<Integer, Queue<Vertex>> _bags, int cores) {//####[73]####
+    //####[73]####
+    private void split(Queue<LayerVertex> waitlist, HashMap<Integer, Queue<LayerVertex>> _bags, int cores) {//####[73]####
         int size = waitlist.size();//####[74]####
         for (int i = 0; i < size; i++) //####[75]####
         {//####[75]####
             _bags.get(i % cores).add(_waitlist.poll());//####[76]####
         }//####[77]####
     }//####[78]####
-//####[80]####
+    //####[80]####
     private static volatile Method __pt__processBag__method = null;//####[80]####
     private synchronized static void __pt__processBag__ensureMethodVarSet() {//####[80]####
         if (__pt__processBag__method == null) {//####[80]####
             try {//####[80]####
                 __pt__processBag__method = ParaTaskHelper.getDeclaredMethod(new ParaTaskHelper.ClassGetter().getCurrentClass(), "__pt__processBag", new Class[] {//####[80]####
-                    //####[80]####
+                        //####[80]####
                 });//####[80]####
             } catch (Exception e) {//####[80]####
                 e.printStackTrace();//####[80]####
@@ -118,17 +118,17 @@ public class BFSParallel {//####[8]####
         taskinfo.setParameters();//####[80]####
         taskinfo.setMethod(__pt__processBag__method);//####[80]####
         taskinfo.setInstance(this);//####[80]####
-        return TaskpoolFactory.getTaskpool().enqueueMulti(taskinfo, 4);//####[80]####
+        return TaskpoolFactory.getTaskpool().enqueueMulti(taskinfo, 1);//####[80]####
     }//####[80]####
     public void __pt__processBag() {//####[80]####
         int core = CurrentTask.relativeID();//####[81]####
-        Queue<Vertex> coreWaitlist = _bags.get(core);//####[84]####
-        Queue<Vertex> nextLevelWaitList = new LinkedList();//####[85]####
+        Queue<LayerVertex> coreWaitlist = _bags.get(core);//####[84]####
+        Queue<LayerVertex> nextLevelWaitList = new LinkedList();//####[85]####
         while (!coreWaitlist.isEmpty()) //####[88]####
         {//####[88]####
-            Vertex current = coreWaitlist.poll();//####[89]####
-            Iterable<Vertex> adjacent = _graph.adjacentVertices(current);//####[90]####
-            for (Vertex v : adjacent) //####[91]####
+            LayerVertex current = coreWaitlist.poll();//####[89]####
+            Iterable<LayerVertex> adjacent = _graph.adjacentVertices(current);//####[90]####
+            for (LayerVertex v : adjacent) //####[91]####
             {//####[91]####
                 if (!_distance.containsKey(v)) //####[92]####
                 {//####[92]####
