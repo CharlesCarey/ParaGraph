@@ -43,7 +43,7 @@ public class BFSTest {
 
     @Test
     public void testParallelDirectedAcyclicGraph() {
-        int N = 50;
+        int N = 100;
         Graph graph = new GraphGenerator().generateWideGraph(N, true, false);
         LayerVertex source = getSource(graph);
         Map<LayerVertex, Integer> distance = new BFSParallel().run(graph, source);
@@ -63,7 +63,7 @@ public class BFSTest {
 
     @Test
     public void testParallelUndirectedAcyclicGraph() {
-        int N = 50;
+        int N = 100;
         Graph graph = new GraphGenerator().generateWideGraph(N, false, false);
         LayerVertex source = getSource(graph);
         Map<LayerVertex, Integer> distance = new BFSParallel().run(graph, source);
@@ -73,7 +73,7 @@ public class BFSTest {
 
     @Test
     public void testParallelDirectedCyclicGraph() {
-        int N = 50;
+        int N = 100;
         Graph graph = new GraphGenerator().generateWideGraph(N, false, true);
         LayerVertex source = getSource(graph);
         Map<LayerVertex, Integer> distance = new BFSParallel().run(graph, source);
