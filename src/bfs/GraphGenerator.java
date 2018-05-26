@@ -68,24 +68,23 @@ public class GraphGenerator {
 
     public Graph generateWideGraph(int numChildren, boolean directed) {
         BasicDirectedAcyclicGraph graph = new BasicDirectedAcyclicGraph("graph");
-        LayerVertex source = new LayerVertex("0");
+        LayerVertex source = new LayerVertex("0", 0);
         graph.add(source);
         for (int i = 1; i < numChildren; i++) {
-            LayerVertex layer1 = new LayerVertex(i + "");
+            LayerVertex layer1 = new LayerVertex(i + "", 1);
             graph.add(layer1);
             graph.add(new BasicSimpleEdge(source.name() + layer1.name(), source, layer1, directed));
             for (int j = 1; j < numChildren; j++) {
-                LayerVertex layer2 = new LayerVertex(i + " " + j);
+                LayerVertex layer2 = new LayerVertex(i + " " + j, 2);
                 graph.add(layer2);
                 graph.add(new BasicSimpleEdge(layer1.name() + layer2.name(), layer1, layer2, directed));
                 for (int k = 1; k < numChildren; k++) {
-                    LayerVertex layer3 = new LayerVertex(i + " " + j + " " + k);
+                    LayerVertex layer3 = new LayerVertex(i + " " + j + " " + k, 3);
                     graph.add(layer3);
                     graph.add(new BasicSimpleEdge(layer2.name() + layer3.name(), layer2, layer3, directed));
                 }
             }
         }
-
         return graph;
     }
 

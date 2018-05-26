@@ -19,15 +19,11 @@ import graph.*;
 import java.util.*;
 import java.util.concurrent.*;
 
-public class BFSTest {
+public class BFSBenchmark {
 
     public void testResult(Map<LayerVertex, Integer> distance) {
         for (LayerVertex v : distance.keySet()) {
-            if (v.name().equals("0")) {
-                assertEquals(0, distance.get(v).intValue());
-            } else {
-                assertEquals(v.name().split(" ").length, distance.get(v).intValue());
-            }
+            assertEquals(v.getLayer(), distance.get(v).intValue());
         }
     }
 
@@ -38,7 +34,7 @@ public class BFSTest {
     @Test
     public void testSequentialSmallWideGraph() {
         int N = 10;
-        Graph graph = new GraphGenerator().generateWideGraph(N, true);
+        Graph graph = new GraphGenerator().generateWideGraph(N, true, false);
         LayerVertex source = getSource(graph);
         HashMap<LayerVertex, Integer> distance = new BFSSequential().run(graph, source);
 
@@ -48,7 +44,7 @@ public class BFSTest {
     @Test
     public void testSequentialMediumWideGraph() {
         int N = 50;
-        Graph graph = new GraphGenerator().generateWideGraph(N, true);
+        Graph graph = new GraphGenerator().generateWideGraph(N, true, false);
         LayerVertex source = getSource(graph);
         HashMap<LayerVertex, Integer> distance = new BFSSequential().run(graph, source);
 
@@ -58,7 +54,7 @@ public class BFSTest {
     @Test
     public void testSequentialLargeWideGraph() {
         int N = 100;
-        Graph graph = new GraphGenerator().generateWideGraph(N, true);
+        Graph graph = new GraphGenerator().generateWideGraph(N, true, false);
         LayerVertex source = getSource(graph);
         HashMap<LayerVertex, Integer> distance = new BFSSequential().run(graph, source);
 
@@ -68,7 +64,7 @@ public class BFSTest {
     @Test
     public void testSequentialVeryLargeWideGraph() {
         int N = 110;
-        Graph graph = new GraphGenerator().generateWideGraph(N, true);
+        Graph graph = new GraphGenerator().generateWideGraph(N, true, false);
         LayerVertex source = getSource(graph);
         HashMap<LayerVertex, Integer> distance = new BFSSequential().run(graph, source);
 
@@ -78,7 +74,7 @@ public class BFSTest {
     @Test
     public void testParallelSmallWideGraph() {
         int N = 10;
-        Graph graph = new GraphGenerator().generateWideGraph(N, true);
+        Graph graph = new GraphGenerator().generateWideGraph(N, true, false);
         LayerVertex source = getSource(graph);
         Map<LayerVertex, Integer> distance = new BFSParallel().run(graph, source);
 
@@ -88,7 +84,7 @@ public class BFSTest {
     @Test
     public void testParallelMediumWideGraph() {
         int N = 50;
-        Graph graph = new GraphGenerator().generateWideGraph(N, true);
+        Graph graph = new GraphGenerator().generateWideGraph(N, true, false);
         LayerVertex source = getSource(graph);
         Map<LayerVertex, Integer> distance = new BFSParallel().run(graph, source);
 
@@ -98,7 +94,7 @@ public class BFSTest {
     @Test
     public void testParallelLargeWideGraph() {
         int N = 100;
-        Graph graph = new GraphGenerator().generateWideGraph(N, true);
+        Graph graph = new GraphGenerator().generateWideGraph(N, true, false);
         LayerVertex source = getSource(graph);
         Map<LayerVertex, Integer> distance = new BFSParallel().run(graph, source);
 
@@ -108,7 +104,7 @@ public class BFSTest {
     @Test
     public void testParallelVeryLargeWideGraph() {
         int N = 110;
-        Graph graph = new GraphGenerator().generateWideGraph(N, true);
+        Graph graph = new GraphGenerator().generateWideGraph(N, true, false);
         LayerVertex source = getSource(graph);
         Map<LayerVertex, Integer> distance = new BFSParallel().run(graph, source);
 

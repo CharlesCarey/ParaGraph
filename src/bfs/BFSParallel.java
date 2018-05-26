@@ -25,15 +25,15 @@ public class BFSParallel {//####[8]####
         else //####[8]####
             m.invoke(instance, arg, interResult);//####[8]####
     }//####[8]####
-    //####[9]####
+//####[9]####
     Queue<LayerVertex> _waitlist = new LinkedList<LayerVertex>();//####[9]####
-    //####[10]####
+//####[10]####
     HashMap<Integer, Queue<LayerVertex>> _bags = new HashMap();//####[10]####
-    //####[11]####
+//####[11]####
     ConcurrentHashMap<LayerVertex, Integer> _distance = new ConcurrentHashMap();//####[11]####
-    //####[12]####
+//####[12]####
     Graph _graph;//####[12]####
-    //####[14]####
+//####[14]####
     public ConcurrentHashMap<LayerVertex, Integer> run(Graph graph, LayerVertex source) {//####[14]####
         _graph = graph;//####[15]####
         int cores = 1;//####[16]####
@@ -85,7 +85,7 @@ public class BFSParallel {//####[8]####
         }//####[68]####
         return _distance;//####[70]####
     }//####[71]####
-    //####[73]####
+//####[73]####
     private void split(Queue<LayerVertex> waitlist, HashMap<Integer, Queue<LayerVertex>> _bags, int cores) {//####[73]####
         int size = waitlist.size();//####[74]####
         for (int i = 0; i < size; i++) //####[75]####
@@ -93,13 +93,13 @@ public class BFSParallel {//####[8]####
             _bags.get(i % cores).add(_waitlist.poll());//####[76]####
         }//####[77]####
     }//####[78]####
-    //####[80]####
+//####[80]####
     private static volatile Method __pt__processBag__method = null;//####[80]####
     private synchronized static void __pt__processBag__ensureMethodVarSet() {//####[80]####
         if (__pt__processBag__method == null) {//####[80]####
             try {//####[80]####
                 __pt__processBag__method = ParaTaskHelper.getDeclaredMethod(new ParaTaskHelper.ClassGetter().getCurrentClass(), "__pt__processBag", new Class[] {//####[80]####
-                        //####[80]####
+                    //####[80]####
                 });//####[80]####
             } catch (Exception e) {//####[80]####
                 e.printStackTrace();//####[80]####

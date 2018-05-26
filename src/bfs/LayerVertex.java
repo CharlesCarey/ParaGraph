@@ -9,11 +9,16 @@ public class LayerVertex extends BasicVertex {
         super(name);
     }
 
+    LayerVertex(String name, int layer) {
+        super(name);
+        _layer = layer;
+    }
+
     public void setLayer(int layer) {
         _layer = layer;
     }
 
-    public int getLayer(int lay) {
+    public int getLayer() {
         return _layer;
     }
 }
