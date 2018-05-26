@@ -38,10 +38,6 @@ public class BoruvkasSequentialComponentBased {
                     }
                 }
             }
-            
-            for (Integer key : cheapestOutgoingEdge.keySet()) {
-            	//System.out.println(String.format("Component: %s; Edge: %s", key, cheapestOutgoingEdge.get(key).name()));
-            }
 
             for (UndirectedEdge<Vertex> e : cheapestOutgoingEdge.values()) {
                 if (graph.connectComponentsAlongEdge(e))
