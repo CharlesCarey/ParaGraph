@@ -5,127 +5,63 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class PrimsAlgorithm {
+    private static final Integer GRAPH_SIZE = 100;
+    private ConcurrentLinkedQueue<UndirectedEdge> _adjacentVerticesEdges = new ConcurrentLinkedQueue<UndirectedEdge>();
+    private ConcurrentHashMap<String, UndirectedEdge> _keyValues  = new ConcurrentHashMap<String, UndirectedEdge>();
+
 
     public static void main (String[] args) {
         //this class executes prims algorithm in sequential and times it
-        BasicUndirectedGraph inputGraph = new BasicUndirectedGraph("input");
-
-        BasicVertex aVtx = new BasicVertex("A");
-        BasicVertex bVtx = new BasicVertex("B");
-        BasicVertex cVtx = new BasicVertex("C");
-        BasicVertex dVtx = new BasicVertex("D");
-        BasicVertex eVtx = new BasicVertex("E");
-        BasicVertex fVtx = new BasicVertex("F");
-        BasicVertex gVtx = new BasicVertex("G");
-
-        inputGraph.add(aVtx);
-        inputGraph.add(bVtx);
-        inputGraph.add(cVtx);
-        inputGraph.add(dVtx);
-        inputGraph.add(eVtx);
-        inputGraph.add(fVtx);
-        inputGraph.add(gVtx);
-
-        BasicSimpleEdge abEdge = new BasicSimpleEdge("ab", aVtx, bVtx, false);
-        abEdge.setWeight(2);
-        inputGraph.add(abEdge);
-
-        BasicSimpleEdge acEdge = new BasicSimpleEdge("ac", aVtx, cVtx, false);
-        acEdge.setWeight(3);
-        inputGraph.add(acEdge);
-
-        BasicSimpleEdge adEdge = new BasicSimpleEdge("ad", aVtx, dVtx, false);
-        adEdge.setWeight(3);
-        inputGraph.add(adEdge);
-
-        BasicSimpleEdge bcEdge = new BasicSimpleEdge("bc", bVtx, cVtx, false);
-        bcEdge.setWeight(4);
-        inputGraph.add(bcEdge);
-
-        BasicSimpleEdge beEdge = new BasicSimpleEdge("be", bVtx, eVtx, false);
-        beEdge.setWeight(3);
-        inputGraph.add(beEdge);
-
-        BasicSimpleEdge cdEdge = new BasicSimpleEdge("cd", cVtx, dVtx, false);
-        cdEdge.setWeight(5);
-        inputGraph.add(cdEdge);
-
-        BasicSimpleEdge ceEdge = new BasicSimpleEdge("ce", cVtx, eVtx, false);
-        ceEdge.setWeight(1);
-        inputGraph.add(ceEdge);
-
-        BasicSimpleEdge cfEdge = new BasicSimpleEdge("cf", cVtx, fVtx, false);
-        cfEdge.setWeight(6);
-        inputGraph.add(cfEdge);
-
-        BasicSimpleEdge dfEdge = new BasicSimpleEdge("df", dVtx, fVtx, false);
-        dfEdge.setWeight(7);
-        inputGraph.add(dfEdge);
-
-        BasicSimpleEdge efEdge = new BasicSimpleEdge("ef", eVtx, fVtx, false);
-        efEdge.setWeight(8);
-        inputGraph.add(efEdge);
-
-        BasicSimpleEdge fgEdge = new BasicSimpleEdge("fg", fVtx, gVtx, false);
-        fgEdge.setWeight(9);
-        inputGraph.add(fgEdge);
-
-        HashSet<BasicVertex> verticesNotYetCovered = new HashSet<BasicVertex>();
-        verticesNotYetCovered.add(aVtx);
-        verticesNotYetCovered.add(bVtx);
-        verticesNotYetCovered.add(cVtx);
-        verticesNotYetCovered.add(dVtx);
-        verticesNotYetCovered.add(eVtx);
-        verticesNotYetCovered.add(fVtx);
-        verticesNotYetCovered.add(gVtx);
         
-        PrintGraph(inputGraph);
+        GraphGenerator gg = new GraphGenerator(1);
+        BasicUndirectedGraph testGraph = gg.GenerateTotalGraph(GRAPH_SIZE, 1, 10, "test");
+        PrintGraph(testGraph);
+        
+        HashSet<BasicVertex> verticesNotYetCovered = new HashSet<BasicVertex>();
+        Iterator<BasicVertex> it = testGraph.verticesIterator();
+        
+        BasicVertex firstVertex = null;
+        while(it.hasNext()) {
+    			BasicVertex v = it.next();
+    			if(v.name().equals("0")) {
+    				firstVertex = v;
+    			}
+    			verticesNotYetCovered.add(v);
+        }
         
         long start_time = System.nanoTime();
-        BasicUndirectedGraph mst = new PrimsAlgorithm().Run(inputGraph, verticesNotYetCovered);
+        BasicUndirectedGraph mst = new PrimsAlgorithm().Run(testGraph, verticesNotYetCovered, firstVertex);
         long end_time = System.nanoTime();
        
        PrintGraph(mst);
-       System.out.println ("Runtime: " + (end_time - start_time)/1000 + "ms");
+       System.out.println ("Runtime: " + (end_time - start_time)/1000000 + "ms");
 
     }
 
-    public BasicUndirectedGraph Run(BasicUndirectedGraph inputGraph, HashSet<BasicVertex> verticesNotYetCovered){
-
+    public BasicUndirectedGraph Run(BasicUndirectedGraph inputGraph, HashSet<BasicVertex> verticesNotYetCovered, BasicVertex firstVtx){
         
-
-        HashMap<String, UndirectedEdge> keyValues = new HashMap<>();
-        keyValues.put("A", new BasicSimpleEdge("AA", inputGraph.vertexForName("aVtx"), inputGraph.vertexForName("aVtx"), false));
-        keyValues.get("A").setWeight(0);
-//
-//        keyValues.put("B", null);
-//        keyValues.put("C", null);
-//        keyValues.put("D", null);
-//        keyValues.put("E", null);
-//        keyValues.put("F", null);
-//        keyValues.put("G", null);
-
+        _keyValues.put(firstVtx.name(), new BasicSimpleEdge(""+firstVtx.name()+firstVtx.name(), firstVtx, firstVtx, false));
+        _keyValues.get(firstVtx.name()).setWeight(0);
         BasicUndirectedGraph mst = new BasicUndirectedGraph("mst");
-
-
+        
         boolean firstTime = true;
+        int loopCount = 0;
 
         while(!verticesNotYetCovered.isEmpty()){
-
-
+        		System.out.println(loopCount);
             //find next vertex to add to MST
             BasicVertex nextVertex = null;
 
             //iterate over vertices to find min key value vertex
             int minWeight = Integer.MAX_VALUE;
             for(BasicVertex v : verticesNotYetCovered){
-
                 String name = v.name();
-                if(keyValues.get(name) != null) {
-                    int weight = keyValues.get(name).weight();
+                if(_keyValues.get(name) != null) {
+                    int weight = _keyValues.get(name).weight();
                     if (weight < minWeight) {
                         nextVertex = v;
                         minWeight = weight;
@@ -135,29 +71,39 @@ public class PrimsAlgorithm {
 
             mst.add(nextVertex);
             if(!firstTime) {
-                UndirectedEdge edge = keyValues.get(nextVertex.name());
+                UndirectedEdge edge = _keyValues.get(nextVertex.name());
                 mst.add(edge);
             }
 
             //update key values around newest mst vertex
-            /* To be parallelised */
+            /* To be parallelised */    
             Iterator<BasicVertex> it = inputGraph.adjacentVerticesIterator(nextVertex);
+            _adjacentVerticesEdges.clear();
             
             while(it.hasNext()){
-               BasicVertex v = it.next();
-               UndirectedEdge edge = inputGraph.edgeBetween(nextVertex, v);
-
-//               if(keyValues.get(v.name()) == null) {
-               if(!keyValues.containsKey(v.name())) {
-                    keyValues.put(v.name(), edge);
-               }else{
-                   if (edge.weight() < keyValues.get(v.name()).weight()) {
-                       keyValues.put(v.name(), edge);
-                   }
-               }
+            		BasicVertex vtx = it.next();
+            		UndirectedEdge e = inputGraph.edgeBetween(nextVertex, vtx);
+            		_adjacentVerticesEdges.add(e);
             }
+            
+            UndirectedEdge e = null;
+            while((e = _adjacentVerticesEdges.poll()) != null) {
+	            	Vertex second = e.second();
+	        		if(nextVertex.equals(e.second())) {
+	        			second = e.first();
+	        		}
+	        		if(!_keyValues.containsKey(second.name())) {
+	                _keyValues.put(second.name(), e);
+	        		}else{
+	               if (e.weight() < _keyValues.get(second.name()).weight()) {
+	                   _keyValues.put(second.name(), e);
+	               }
+	        		}
+        }
+       
            verticesNotYetCovered.remove(nextVertex);
            firstTime =false;
+           loopCount++;
         }
         return mst;
     }
