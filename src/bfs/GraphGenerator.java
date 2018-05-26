@@ -17,6 +17,8 @@ public class GraphGenerator {
             vertices.add(v);
         }
 
+        LayerVertex v = new LayerVertex("0");
+        vertices.add(v);
         return vertices;
     }
 
@@ -66,7 +68,7 @@ public class GraphGenerator {
         return buildGraph(vertices, generateEdges(vertices, maxOutGoingEdges, directed), directed);
     }
 
-    public Graph generateWideGraph(int numChildren, boolean directed) {
+    public Graph generateWideGraph(int numChildren, boolean directed, boolean cycles) {
         BasicDirectedAcyclicGraph graph = new BasicDirectedAcyclicGraph("graph");
         LayerVertex source = new LayerVertex("0", 0);
         graph.add(source);
@@ -74,18 +76,25 @@ public class GraphGenerator {
             LayerVertex layer1 = new LayerVertex(i + "", 1);
             graph.add(layer1);
             graph.add(new BasicSimpleEdge(source.name() + layer1.name(), source, layer1, directed));
+            if (cycles && directed) graph.add(new BasicSimpleEdge(layer1.name() + source.name(), layer1, source, directed));
             for (int j = 1; j < numChildren; j++) {
                 LayerVertex layer2 = new LayerVertex(i + " " + j, 2);
                 graph.add(layer2);
                 graph.add(new BasicSimpleEdge(layer1.name() + layer2.name(), layer1, layer2, directed));
+                if (cycles && directed) graph.add(new BasicSimpleEdge(layer2.name() + layer1.name(), layer2, layer1, directed));
                 for (int k = 1; k < numChildren; k++) {
                     LayerVertex layer3 = new LayerVertex(i + " " + j + " " + k, 3);
                     graph.add(layer3);
                     graph.add(new BasicSimpleEdge(layer2.name() + layer3.name(), layer2, layer3, directed));
+                    if (cycles && directed) graph.add(new BasicSimpleEdge(layer3.name() + layer2.name(), layer3, layer2, directed));
                 }
             }
         }
         return graph;
     }
+
+
+
+
 
 }
