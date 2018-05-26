@@ -4,13 +4,16 @@ import graph.BasicUndirectedGraph;
 import graph.Vertex;
 
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class ComponentisedGraph extends BasicUndirectedGraph<Vertex, UndirectedEdge<Vertex>> {
 
     private final Map<Integer, List<Vertex>> _components = new HashMap<>();
     private final Map<Vertex, Integer> _verts = new HashMap<>();
     private final Map<Integer, List<UndirectedEdge<Vertex>>> _componentsOutgoingEdges = new HashMap<>();
-
+    private final Map<Integer, Lock> _locks = new HashMap<>();
+    
     private int nextComponentTag = 0;
 
     public ComponentisedGraph() {
@@ -30,6 +33,7 @@ public class ComponentisedGraph extends BasicUndirectedGraph<Vertex, UndirectedE
         _components.put(componentTag, vList);
         _verts.put(v, componentTag);
         _componentsOutgoingEdges.put(componentTag, new ArrayList<>());
+        _locks.put(componentTag, new ReentrantLock());
 
         return super.add(v);
     }
@@ -64,24 +68,35 @@ public class ComponentisedGraph extends BasicUndirectedGraph<Vertex, UndirectedE
         return true;
     }
 
-    public boolean connectComponentsAlongEdge(UndirectedEdge<Vertex> e) {
+    public synchronized boolean connectComponentsAlongEdge(UndirectedEdge<Vertex> e) {
         Vertex v1 = e.first();
         Vertex v2 = e.second();
         int v1Component = _verts.get(v1).intValue();
         int v2Component = _verts.get(v2).intValue();
-
-        if (v1Component == v2Component)
+        
+        int firstComponent = v1Component < v2Component ? v1Component : v2Component;
+        int secondComponent = v2Component < v1Component ? v1Component : v2Component;
+        
+		
+        if (v1Component == v2Component) {
             return false;
-
-        List<Vertex> component1Verts = _components.get(v1Component);
-        List<Vertex> component2Verts = _components.remove(v2Component);
-
-        for (int i = 0; i < component2Verts.size(); i++) {
-            Vertex v = component2Verts.get(i);
-            _verts.put(v, v1Component);
-            component1Verts.add(v);
         }
 
+        if (_locks.get(firstComponent).tryLock() && _locks.get(secondComponent).tryLock()) {
+
+	        List<Vertex> component1Verts = _components.get(v1Component);
+	        List<Vertex> component2Verts = _components.remove(v2Component);
+	
+	        for (int i = 0; i < component2Verts.size(); i++) {
+	            Vertex v = component2Verts.get(i);
+	            _verts.put(v, v1Component);
+	            component1Verts.add(v);
+	        }
+			 
+	        _locks.get(firstComponent).unlock();
+	        _locks.get(secondComponent).unlock();
+        }
+        
         return true;
     }
 
