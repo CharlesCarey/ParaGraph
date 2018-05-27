@@ -1,0 +1,143 @@
+package BoruvkasAlgorithm;
+
+import graph.*;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.locks.Lock;
+import BoruvkasAlgorithm.Graph.ComponentisedGraph;
+import BoruvkasAlgorithm.Graph.GraphPresenter;
+import BoruvkasAlgorithm.Graph.MinimumSpanningTree;
+import pt.runtime.TaskIDGroup;
+
+public class BoruvkasParallelComponentBased {
+	
+	class TaskParams {
+		public TaskParams(Queue<UndirectedEdge<Vertex>> edges, ComponentisedGraph graph, Map<Integer, UndirectedEdge<Vertex>> cheapestOutgoingEdges) {
+			this.edges = edges;
+			this.graph = graph;
+			this.cheapestOutgoingEdges = cheapestOutgoingEdges;
+		}
+		
+		Queue<UndirectedEdge<Vertex>> edges;
+		ComponentisedGraph graph;
+		Map<Integer, UndirectedEdge<Vertex>> cheapestOutgoingEdges;
+	}
+	
+	class Task2Params {
+		public Task2Params(Queue<UndirectedEdge<Vertex>> edges, ComponentisedGraph graph, List<UndirectedEdge<Vertex>> edgesToAdd) {
+			this.edges = edges;
+			this.graph = graph;
+			this.edgesToAdd = edgesToAdd;
+		}
+		
+		Queue<UndirectedEdge<Vertex>> edges;
+		ComponentisedGraph graph;
+		List<UndirectedEdge<Vertex>> edgesToAdd;
+	}
+	
+	private int _threads = 1;
+	
+    public MinimumSpanningTree Run(ComponentisedGraph graph, int threads) {
+    	
+    	_threads = threads;
+    	
+    	//GraphPresenter graphPresenter = new GraphPresenter(System.out);
+    	//graphPresenter.PrintGraph("Input Graph", graph);
+
+    	MinimumSpanningTree mst = new MinimumSpanningTree();
+
+        for (Vertex v : graph.vertices()) {
+            mst.add(v);
+        }
+        
+        //int iteration = 1;
+
+        while (graph.sizeComponents() > 1) {
+        	
+        	////System.out.println(String.format("============== START ITERATION %s ==============\n", iteration++));
+        			
+        	Map<Integer, UndirectedEdge<Vertex>> cheapestOutgoingEdges = new ConcurrentHashMap<Integer, UndirectedEdge<Vertex>>();
+
+            Queue<UndirectedEdge<Vertex>> edges = new ConcurrentLinkedQueue<UndirectedEdge<Vertex>>(new ArrayList<UndirectedEdge<Vertex>>(graph.edgesSet()));
+            List<UndirectedEdge<Vertex>> edgesToAdd = new ArrayList<UndirectedEdge<Vertex>>();
+            
+            try {
+            	
+            	TaskParams taskParams = new TaskParams(edges, graph, cheapestOutgoingEdges);
+            	TaskIDGroup tasks1 = FindCheapestEdges(taskParams);
+            	tasks1.waitTillFinished();
+            	
+            	Queue<UndirectedEdge<Vertex>> work = new ConcurrentLinkedQueue<UndirectedEdge<Vertex>>(cheapestOutgoingEdges.values());
+            	
+    			//List<Vertex> vertices = new ArrayList(graph.verticesSet());
+	            //Collections.shuffle(vertices);
+	            //Queue<UndirectedEdge<Vertex>> work = new ConcurrentLinkedQueue(vertices);
+	            
+            	Task2Params task2Params = new Task2Params(work, graph, edgesToAdd);
+            	TaskIDGroup tasks2 = ConnectAlongEdges(task2Params);
+            	tasks2.waitTillFinished();
+            	
+            } catch(ExecutionException ex) {
+                //System.out.println("Execution Exception");
+            } catch(InterruptedException ex) {
+            	//System.out.println("Interrupted Exception");
+            }
+
+            for (UndirectedEdge<Vertex> e : edgesToAdd) {
+                mst.add(e);
+            }
+            
+            //System.out.println();
+        }
+
+        //graphPresenter.PrintGraph("MST Found", mst);
+
+        return mst;
+    }
+    
+    TASK(_threads) private void ConnectAlongEdges(Task2Params params) {
+    	
+    	Queue<UndirectedEdge<Vertex>> work = params.edges;
+    	ComponentisedGraph graph = params.graph;
+    	List<UndirectedEdge<Vertex>> edgesToAdd = params.edgesToAdd;
+    	
+    	UndirectedEdge<Vertex> e = null;
+    	
+    	while ((e = work.poll()) != null) {
+    		if (graph.connectComponentsAlongEdge(e)) {
+                edgesToAdd.add(e);
+    		}
+    	}
+    }
+      
+    TASK(_threads) private void FindCheapestEdges(TaskParams taskParams) {
+    	
+    	Queue<UndirectedEdge<Vertex>> edges = taskParams.edges;
+    	ComponentisedGraph graph = taskParams.graph;
+    	Map<Integer, UndirectedEdge<Vertex>> cheapestOutgoingEdges = taskParams.cheapestOutgoingEdges;
+    	
+    	UndirectedEdge<Vertex> e = null;
+    	
+    	while ((e = edges.poll()) != null) {
+    		
+    		//System.out.println("ID: " + CurrentTask.relativeID() + "; Processing: " + e.name());		
+
+    		Vertex v1 = e.first();
+    		Vertex v2 = e.second();
+            int v1Component = graph.getVertexComponentTag(v1);
+            int v2Component = graph.getVertexComponentTag(v2);
+
+            if (v1Component != v2Component) {
+                if (!cheapestOutgoingEdges.containsKey(v1Component) || cheapestOutgoingEdges.get(v1Component).weight() > e.weight()) {
+                	cheapestOutgoingEdges.put(v1Component, e);
+                }
+
+                if (!cheapestOutgoingEdges.containsKey(v2Component) || cheapestOutgoingEdges.get(v2Component).weight() > e.weight()) {
+                	cheapestOutgoingEdges.put(v2Component, e);
+                }
+            }
+    	}
+    }
+}

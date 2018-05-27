@@ -1,21 +1,18 @@
-package BoruvkasAlgorithm;
-import graph.*;
+package BoruvkasAlgorithm.Graph;
 
+import graph.*;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import BoruvkasAlgorithm.Exceptions.GraphMergeException;
 
 public class MergeableGraph extends BasicUndirectedGraph<Vertex, UndirectedEdge<Vertex>> {
 
     private final Map<UndirectedEdge<Vertex>, UndirectedEdge<Vertex>> _equivalentEdgeMap = new HashMap<>();
     private final Map<Vertex, Lock> _vertexLocks = new HashMap<>();
     
-    public MergeableGraph(String name) {
-        super(name);
-    }
-
-    public MergeableGraph(String name, String type) {
-        super(name, type);
+    public MergeableGraph() {
+    	super("G", "Undirected");
     }
 
     public boolean add(Vertex v) {
@@ -39,7 +36,7 @@ public class MergeableGraph extends BasicUndirectedGraph<Vertex, UndirectedEdge<
     }
 
     public synchronized void mergeAdjacentVertices(UndirectedEdge<Vertex> edge, Vertex vertexToMerge) throws GraphMergeException {
-
+    	
         if (edge.first() != vertexToMerge && edge.second() != vertexToMerge)
             throw new GraphMergeException("Vertex to merge is not connected to the edge specified");
 
@@ -77,21 +74,11 @@ public class MergeableGraph extends BasicUndirectedGraph<Vertex, UndirectedEdge<
     	return _vertexLocks.get(v);
     }
     
-    public boolean TryGetVertexLock(Vertex v, int threadId) {
-    	
-    	boolean success = _vertexLocks.get(v).tryLock();
-    	
-    	if (success) {
-    		System.out.println(String.format("ID: %s; Locks %s", threadId, v.name()));
-    	} else {
-    		System.out.println(String.format("ID: %s; Failed Lock %s", threadId, v.name()));
-    	}
-    	
-    	return success;
+    public boolean TryGetVertexLock(Vertex v, int threadId) {	
+    	return _vertexLocks.get(v).tryLock();	
     }
     
     public void ReleaseLock(Vertex v, int threadId) {
-    	System.out.println(String.format("ID: %s; Releases %s", threadId, v.name()));
     	_vertexLocks.get(v).unlock();
     }
 }
