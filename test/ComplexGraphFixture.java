@@ -1,3 +1,5 @@
+package ParaGraph.test;
+
 import BoruvkasAlgorithm.Graph.ComponentisedGraph;
 import BoruvkasAlgorithm.Graph.MergeableGraph;
 import BoruvkasAlgorithm.Graph.MinimumSpanningTree;

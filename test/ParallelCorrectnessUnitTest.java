@@ -1,3 +1,5 @@
+package ParaGraph.test;
+
 import BoruvkasAlgorithm.BoruvkasParallelComponentBased;
 import BoruvkasAlgorithm.BoruvkasParallelMergeBased;
 import BoruvkasAlgorithm.Graph.ComponentisedGraph;
