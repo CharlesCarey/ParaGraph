@@ -1,4 +1,4 @@
-package BoruvkasAlgorithm;
+package prims;
 public class ParaGraph {
 
 
