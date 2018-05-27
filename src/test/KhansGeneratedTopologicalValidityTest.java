@@ -1,4 +1,4 @@
-package KhansAlgorithm.tests;
+package test;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +15,7 @@ import KhansAlgorithm.KhansTopologicalSort;
 import KhansAlgorithm.RandomGraphGenerator;
 import KhansAlgorithm.ParentCountVertex;
 
-public class GeneratedTopologicalValidityTest {
+public class KhansGeneratedTopologicalValidityTest {
 	
 	KhansTopologicalSort _sequentialKhan;
 	KhansSortParallel _parallelKhan;
@@ -28,6 +28,7 @@ public class GeneratedTopologicalValidityTest {
 		_graphGenerator = new RandomGraphGenerator();
 	}
 
+	/*
 	@Test
 	public void testSequentialKhansWithLargeGeneratedGraphWithFewNodesPerLevel () {
 		List<ParentCountVertex> vertices = _graphGenerator.generateVertices(50000, 3);
@@ -71,6 +72,7 @@ public class GeneratedTopologicalValidityTest {
         assertEquals(vertices.size(), sortedGraph.size());
         assertEquals(true, isValidTopologicalSort(sortedGraph, graph));
 	}
+	*/
 	
 	public static boolean isValidTopologicalSort (List<Vertex> topologicalOrdering, BasicDirectedAcyclicGraph graph) {
         HashMap<Vertex, Boolean> seenNodes = new HashMap<Vertex, Boolean>();

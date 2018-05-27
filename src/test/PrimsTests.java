@@ -1,5 +1,4 @@
-package ParaGraph.test;
-
+package test;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -14,6 +13,7 @@ import prims.PrimsAlgorithm;
 import graph.BasicSimpleEdge;
 import graph.BasicUndirectedGraph;
 import graph.BasicVertex;
+
 public class PrimsTests {
 
 	private BasicUndirectedGraph _inputGraph1;

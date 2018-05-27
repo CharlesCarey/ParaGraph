@@ -1,5 +1,4 @@
-package ParaGraph.test;
-
+package test;
 import graph.BasicUndirectedGraph;
 import graph.UndirectedEdge;
 import graph.Vertex;
@@ -25,7 +24,7 @@ import BoruvkasAlgorithm.BoruvkasParallelComponentBased;
 import BoruvkasAlgorithm.BoruvkasParallelMergeBased;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class MinimumSpanningTreeTotalUnitTests extends GraphTest  {
+public class MinimumSpanningTreeTotalUnitTests extends GraphTest {
 	
     @Test
     public void ComponentisedTotalGraphCorrectness() {

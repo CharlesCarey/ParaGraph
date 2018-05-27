@@ -1,5 +1,4 @@
-package ParaGraph.test;
-
+package test;
 import graph.BasicUndirectedGraph;
 import graph.UndirectedEdge;
 import graph.Vertex;
