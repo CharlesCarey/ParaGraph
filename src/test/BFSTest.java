@@ -20,7 +20,8 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class BFSTest {
-
+    static int nodes = 100_000;
+    static int children = 1000;
     public void testResult(Map<LayerVertex, Integer> distance) {
         for (LayerVertex v : distance.keySet()) {
             assertEquals(v.getLayer(), distance.get(v).intValue());
@@ -33,8 +34,7 @@ public class BFSTest {
 
     @Test
     public void testSequentialDirectedAcyclicGraph() {
-        int N = 50;
-        Graph graph = new GraphGenerator().generateWideGraph(N, true, false);
+        Graph graph = new GraphGenerator().generateGraph(nodes, children, true, false);
         LayerVertex source = getSource(graph);
         HashMap<LayerVertex, Integer> distance = new BFSSequential().run(graph, source);
 
@@ -43,8 +43,7 @@ public class BFSTest {
 
     @Test
     public void testParallelDirectedAcyclicGraph() {
-        int N = 100;
-        Graph graph = new GraphGenerator().generateWideGraph(N, true, false);
+        Graph graph = new GraphGenerator().generateGraph(nodes, children, true, false);
         LayerVertex source = getSource(graph);
         Map<LayerVertex, Integer> distance = new BFSParallel().run(graph, source);
 
@@ -53,8 +52,7 @@ public class BFSTest {
 
     @Test
     public void testSequentialUndirectedAcyclicGraph() {
-        int N = 50;
-        Graph graph = new GraphGenerator().generateWideGraph(N, false, false);
+        Graph graph = new GraphGenerator().generateGraph(nodes, children, false, false);
         LayerVertex source = getSource(graph);
         HashMap<LayerVertex, Integer> distance = new BFSSequential().run(graph, source);
 
@@ -63,28 +61,25 @@ public class BFSTest {
 
     @Test
     public void testParallelUndirectedAcyclicGraph() {
-        int N = 100;
-        Graph graph = new GraphGenerator().generateWideGraph(N, false, false);
+        Graph graph = new GraphGenerator().generateGraph(nodes, children, false, false);
         LayerVertex source = getSource(graph);
         Map<LayerVertex, Integer> distance = new BFSParallel().run(graph, source);
+
+        testResult(distance);
+    }
+
+    @Test
+    public void testSequentialDirectedCyclicGraph() {
+        Graph graph = new GraphGenerator().generateGraph(nodes, children, true, true);
+        LayerVertex source = getSource(graph);
+        HashMap<LayerVertex, Integer> distance = new BFSSequential().run(graph, source);
 
         testResult(distance);
     }
 
     @Test
     public void testParallelDirectedCyclicGraph() {
-        int N = 100;
-        Graph graph = new GraphGenerator().generateWideGraph(N, false, true);
-        LayerVertex source = getSource(graph);
-        Map<LayerVertex, Integer> distance = new BFSParallel().run(graph, source);
-
-        testResult(distance);
-    }
-
-    @Test
-    public void testSmallParallelRandomDirectedCyclicGraph() {
-        int N = 50;
-        Graph graph = new GraphGenerator().makeGraph(1000, 1000, true);
+        Graph graph = new GraphGenerator().generateGraph(nodes, children, false, true);
         LayerVertex source = getSource(graph);
         Map<LayerVertex, Integer> distance = new BFSParallel().run(graph, source);
 

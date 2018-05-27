@@ -92,6 +92,40 @@ public class GraphGenerator {
         }
         return graph;
     }
+    public Graph generateGraph(int nodes, int numChildren, boolean directed, boolean cycles) {
+        BasicDirectedAcyclicGraph graph = new BasicDirectedAcyclicGraph("graph");
+        LayerVertex source = new LayerVertex("0", 0);
+        graph.add(source);
+        int count = 0;
+
+        ArrayList<LayerVertex> previousLevelNodes = new ArrayList<>();
+        previousLevelNodes.add(source);
+        int layer = 0;
+
+        while (count < nodes) {
+            layer++;
+            ArrayList<LayerVertex> currentLevelNodes = new ArrayList<>();
+            for (LayerVertex parent : previousLevelNodes) {
+                for (int i = 1; i < numChildren; i++) {
+                    if (count == nodes) {
+                        break;
+                    }
+                    LayerVertex vertex = new LayerVertex(count + "" + layer, layer);
+                    graph.add(vertex);
+                    graph.add(new BasicSimpleEdge(parent.name() + vertex.name(), parent, vertex, directed));
+                    count++;
+                    currentLevelNodes.add(vertex);
+                    if (cycles && directed) {
+                        graph.add(new BasicSimpleEdge(vertex.name() + parent.name(), vertex, parent, directed));
+                        currentLevelNodes.add(vertex);
+                    }
+
+                }
+            }
+            previousLevelNodes = currentLevelNodes;
+        }
+        return graph;
+    }
 
 
 

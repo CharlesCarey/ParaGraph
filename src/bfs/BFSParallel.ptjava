@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class BFSParallel {
+	static final int cores = 4;
     Queue<LayerVertex> _waitlist = new LinkedList<LayerVertex>();
     HashMap<Integer, Queue<LayerVertex>> _bags = new HashMap();
     ConcurrentHashMap<LayerVertex, Integer> _distance = new ConcurrentHashMap();
@@ -13,7 +14,6 @@ public class BFSParallel {
 
     public ConcurrentHashMap<LayerVertex, Integer> run(Graph graph, LayerVertex source) {
         _graph = graph;
-        int cores = 1;
 
         // Initalise bags
         for (int i = 0; i < cores; i++) {
@@ -25,7 +25,7 @@ public class BFSParallel {
 
         while (!_waitlist.isEmpty()) {
             // sequential if too small
-            if (_waitlist.size() < cores * 1) {
+            if (_waitlist.size() < cores) {
                 // Process entire level
                 int size = _waitlist.size();
                 for (int i = 0; i < size; i++) {
@@ -77,9 +77,9 @@ public class BFSParallel {
         }
     }
 
-    TASK(1) public void processBag() {
+    TASK(cores) public void processBag() {
     	int core = CurrentTask.relativeID();
-//    	System.out.println(core);
+
         // /Get the bag for the core
         Queue<LayerVertex> coreWaitlist = _bags.get(core);
         Queue<LayerVertex> nextLevelWaitList = new LinkedList();
