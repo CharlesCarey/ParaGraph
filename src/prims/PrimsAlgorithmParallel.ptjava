@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class PrimsAlgorithmParallel {
     private ConcurrentHashMap<String, UndirectedEdge> _keyValues  = new ConcurrentHashMap<String, UndirectedEdge>();
     private ConcurrentLinkedQueue<UndirectedEdge> _adjacentVerticesEdges = new ConcurrentLinkedQueue<UndirectedEdge>();
-    private static final Integer GRAPH_SIZE = 1000;
+    private static final Integer GRAPH_SIZE = 10;
     
 	    public static void main (String[] args) {
 	        //this class executes prims algorithm in parallel and times it
@@ -51,71 +51,77 @@ public class PrimsAlgorithmParallel {
 
 	        boolean firstTime = true;
 	        
-	        while(!verticesNotYetCovered.isEmpty()){
-	            //find next vertex to add to MST
-	            BasicVertex nextVertex = null;
+	        try {
+		        while(!verticesNotYetCovered.isEmpty()){
+		            //find next vertex to add to MST
+		            BasicVertex nextVertex = null;
+	
+		            //iterate over vertices to find min key value vertex
+		            int minWeight = Integer.MAX_VALUE;
+		            for(BasicVertex v : verticesNotYetCovered){
+		                String name = v.name();
+		                if(_keyValues.get(name) != null) {
+		                    int weight = _keyValues.get(name).weight();
+		                    if (weight < minWeight) {
+		                        nextVertex = v;
+		                        minWeight = weight;
+		                    }
+		                }
+		            }
+		            mst.add(nextVertex);
+		            if(!firstTime) {
+		                UndirectedEdge edge = _keyValues.get(nextVertex.name());
+		                mst.add(edge);
+		            }
+	
+		            //update key values around newest mst vertex
+		            /* To be parallelised */
+		            Iterator<BasicVertex> it = inputGraph.adjacentVerticesIterator(nextVertex);
+		            _adjacentVerticesEdges.clear();
+		            
+		            while(it.hasNext()){
+		            		BasicVertex vtx = it.next();
+		            		UndirectedEdge e = inputGraph.edgeBetween(nextVertex, vtx);
+		            		if(!_keyValues.containsKey(vtx.name())){
+		            			_keyValues.put(vtx.name(), e);
+		            		}
 
-	            //iterate over vertices to find min key value vertex
-	            int minWeight = Integer.MAX_VALUE;
-	            for(BasicVertex v : verticesNotYetCovered){
-	                String name = v.name();
-	                if(_keyValues.get(name) != null) {
-	                    int weight = _keyValues.get(name).weight();
-	                    if (weight < minWeight) {
-	                        nextVertex = v;
-	                        minWeight = weight;
-	                    }
-	                }
-	            }
-	            mst.add(nextVertex);
-	            if(!firstTime) {
-	                UndirectedEdge edge = _keyValues.get(nextVertex.name());
-	                mst.add(edge);
-	            }
-
-	            //update key values around newest mst vertex
-	            /* To be parallelised */
-	            Iterator<BasicVertex> it = inputGraph.adjacentVerticesIterator(nextVertex);
-	            _adjacentVerticesEdges.clear();
-	            
-	            while(it.hasNext()){
-	            		BasicVertex vtx = it.next();
-	            		UndirectedEdge e = inputGraph.edgeBetween(nextVertex, vtx);
-	            		_adjacentVerticesEdges.add(e);
-	            }
-	            
-	            try {
-	        		TaskIDGroup tasks = TaskIterateVertices(nextVertex);
-	        		tasks.waitTillFinished();
+		            		_adjacentVerticesEdges.add(e);
+		            }
+		            
+		            
+		            System.out.println("Start tasks");
+		        		TaskIDGroup tasks = TaskIterateVertices(nextVertex);
+		        		tasks.waitTillFinished();
+		        		System.out.println("End tasks");
+		      
+		             
+		           verticesNotYetCovered.remove(nextVertex);
+		           firstTime =false;
+		        }
 	        } catch(ExecutionException ex) {
 	            System.out.println("Execution Exception");
 	        } catch(InterruptedException ex) {
 	        		System.out.println("Interrupted Exception");
 	        }
-	             
-	           verticesNotYetCovered.remove(nextVertex);
-	           firstTime =false;
-	        }
 	        
 	        return mst;
 	    }
 	    
-	    TASK(2) private void TaskIterateVertices(BasicVertex nextVertex) {
+	    TASK(*) private void TaskIterateVertices(BasicVertex nextVertex) {
 	    	UndirectedEdge e = null;	    	
+	    	System.out.println("Start task " + CurrentTask.relativeID());
 	    	while ((e = _adjacentVerticesEdges.poll()) != null) {
+	    		System.out.println(CurrentTask.relativeID() + " polls " + e.name());
             		Vertex second = e.second();
             		if(nextVertex.equals(e.second())) {
             			second = e.first();
             		}
-            		if(!_keyValues.containsKey(second.name())) {
-                    _keyValues.put(second.name(), e);
-            		}else{
                    if (e.weight() < _keyValues.get(second.name()).weight()) {
                        _keyValues.put(second.name(), e);
                    }
-            		}
             }
-	    }
+         }
 	    
 
 	    private static void PrintGraph(BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> G) {
