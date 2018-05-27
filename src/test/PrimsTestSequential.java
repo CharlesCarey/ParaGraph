@@ -14,7 +14,7 @@ import graph.BasicSimpleEdge;
 import graph.BasicUndirectedGraph;
 import graph.BasicVertex;
 
-public class PrimsTests {
+public class PrimsTestSequential {
 
 	private BasicUndirectedGraph _inputGraph1;
 	private HashSet<BasicVertex> _verticesNotYetCovered1;

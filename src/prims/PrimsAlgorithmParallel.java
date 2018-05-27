@@ -133,7 +133,7 @@ public class PrimsAlgorithmParallel {//####[12]####
         taskinfo.setParameters(nextVertex);//####[103]####
         taskinfo.setMethod(__pt__TaskIterateVertices_BasicVertex_method);//####[103]####
         taskinfo.setInstance(this);//####[103]####
-        return TaskpoolFactory.getTaskpool().enqueueMulti(taskinfo, 2);//####[103]####
+        return TaskpoolFactory.getTaskpool().enqueueMulti(taskinfo, -1);//####[103]####
     }//####[103]####
     private TaskIDGroup<Void> TaskIterateVertices(TaskID<BasicVertex> nextVertex) {//####[103]####
         //-- execute asynchronously by enqueuing onto the taskpool//####[103]####
@@ -149,7 +149,7 @@ public class PrimsAlgorithmParallel {//####[12]####
         taskinfo.setParameters(nextVertex);//####[103]####
         taskinfo.setMethod(__pt__TaskIterateVertices_BasicVertex_method);//####[103]####
         taskinfo.setInstance(this);//####[103]####
-        return TaskpoolFactory.getTaskpool().enqueueMulti(taskinfo, 2);//####[103]####
+        return TaskpoolFactory.getTaskpool().enqueueMulti(taskinfo, -1);//####[103]####
     }//####[103]####
     private TaskIDGroup<Void> TaskIterateVertices(BlockingQueue<BasicVertex> nextVertex) {//####[103]####
         //-- execute asynchronously by enqueuing onto the taskpool//####[103]####
@@ -165,7 +165,7 @@ public class PrimsAlgorithmParallel {//####[12]####
         taskinfo.setParameters(nextVertex);//####[103]####
         taskinfo.setMethod(__pt__TaskIterateVertices_BasicVertex_method);//####[103]####
         taskinfo.setInstance(this);//####[103]####
-        return TaskpoolFactory.getTaskpool().enqueueMulti(taskinfo, 2);//####[103]####
+        return TaskpoolFactory.getTaskpool().enqueueMulti(taskinfo, -1);//####[103]####
     }//####[103]####
     public void __pt__TaskIterateVertices(BasicVertex nextVertex) {//####[103]####
         UndirectedEdge e = null;//####[104]####

@@ -100,7 +100,7 @@ public class PrimsAlgorithmParallel {
 	        return mst;
 	    }
 	    
-	    TASK(2) private void TaskIterateVertices(BasicVertex nextVertex) {
+	    TASK(*) private void TaskIterateVertices(BasicVertex nextVertex) {
 	    	UndirectedEdge e = null;	    	
 	    	while ((e = _adjacentVerticesEdges.poll()) != null) {
             		Vertex second = e.second();
