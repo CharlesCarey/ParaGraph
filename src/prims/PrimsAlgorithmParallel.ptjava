@@ -50,10 +50,8 @@ public class PrimsAlgorithmParallel {
 	        BasicUndirectedGraph mst = new BasicUndirectedGraph("mst");
 
 	        boolean firstTime = true;
-	        int loopCount = 0;
 	        
 	        while(!verticesNotYetCovered.isEmpty()){
-	        	System.out.println(loopCount);
 	            //find next vertex to add to MST
 	            BasicVertex nextVertex = null;
 
@@ -97,13 +95,12 @@ public class PrimsAlgorithmParallel {
 	             
 	           verticesNotYetCovered.remove(nextVertex);
 	           firstTime =false;
-	           loopCount++;
 	        }
 	        
 	        return mst;
 	    }
 	    
-	    TASK(*) public void TaskIterateVertices(BasicVertex nextVertex) {
+	    TASK(2) private void TaskIterateVertices(BasicVertex nextVertex) {
 	    	UndirectedEdge e = null;	    	
 	    	while ((e = _adjacentVerticesEdges.poll()) != null) {
             		Vertex second = e.second();

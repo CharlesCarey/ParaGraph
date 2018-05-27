@@ -49,10 +49,8 @@ public class PrimsAlgorithm {
         BasicUndirectedGraph mst = new BasicUndirectedGraph("mst");
         
         boolean firstTime = true;
-        int loopCount = 0;
 
         while(!verticesNotYetCovered.isEmpty()){
-        		System.out.println(loopCount);
             //find next vertex to add to MST
             BasicVertex nextVertex = null;
 
@@ -103,7 +101,6 @@ public class PrimsAlgorithm {
        
            verticesNotYetCovered.remove(nextVertex);
            firstTime =false;
-           loopCount++;
         }
         return mst;
     }

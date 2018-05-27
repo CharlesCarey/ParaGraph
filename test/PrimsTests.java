@@ -21,6 +21,8 @@ public class PrimsTests {
 	
 	private BasicUndirectedGraph _emptyGraph;
 	private HashSet<BasicVertex> _emptyVerticesNotYetCovered;
+	
+	private BasicVertex _firstVertex;
 
 	@Before
 	public void setup() {
@@ -34,6 +36,7 @@ public class PrimsTests {
         BasicVertex eVtx = new BasicVertex("E");
         BasicVertex fVtx = new BasicVertex("F");
         BasicVertex gVtx = new BasicVertex("G");
+        _firstVertex = aVtx;
 
         _inputGraph1.add(aVtx);
         _inputGraph1.add(bVtx);
@@ -102,7 +105,7 @@ public class PrimsTests {
 	
 	@Test
 	public void testCorrectPrimsTreeWeight() {
-        BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> mst = new PrimsAlgorithm().Run(_inputGraph1, _verticesNotYetCovered1);
+        BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> mst = new PrimsAlgorithm().Run(_inputGraph1, _verticesNotYetCovered1, _firstVertex);
         int minTotalWeight = 0;
         for(BasicSimpleEdge e : mst.edges()) {
             minTotalWeight += e.weight();
@@ -111,7 +114,7 @@ public class PrimsTests {
 	}
 	@Test
 	public void testMstOutputContainsAllVertices() {
-        BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> mst = new PrimsAlgorithm().Run(_inputGraph1, _verticesNotYetCovered1);
+        BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> mst = new PrimsAlgorithm().Run(_inputGraph1, _verticesNotYetCovered1, _firstVertex);
         
         ArrayList<String> possibleVertices = new ArrayList<String>();
         possibleVertices.add("A");
@@ -134,7 +137,7 @@ public class PrimsTests {
 	}
 	@Test
 	public void testMstOutputContainsAllMinimumEdges() {
-        BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> mst = new PrimsAlgorithm().Run(_inputGraph1, _verticesNotYetCovered1);
+        BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> mst = new PrimsAlgorithm().Run(_inputGraph1, _verticesNotYetCovered1, _firstVertex);
         
         ArrayList<String> allPossibleMinWeightEdges = new ArrayList<String>();
         allPossibleMinWeightEdges.add("ab");
@@ -157,7 +160,7 @@ public class PrimsTests {
 
 	@Test
 	public void testEmptyInputGraph() {
-        BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> mst = new PrimsAlgorithm().Run(_emptyGraph, _emptyVerticesNotYetCovered);
+        BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> mst = new PrimsAlgorithm().Run(_emptyGraph, _emptyVerticesNotYetCovered, _firstVertex);
         Assert.assertTrue(mst.edgesSet().isEmpty());
         Assert.assertTrue(mst.verticesSet().isEmpty());
 	}
