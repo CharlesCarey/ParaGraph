@@ -19,23 +19,12 @@ import BoruvkasAlgorithm.Graph.GraphPresenter;
 import BoruvkasAlgorithm.Graph.MinimumSpanningTree;
 import BoruvkasAlgorithm.Graph.Generator.ComponentisedGraphGenerator;
 import BoruvkasAlgorithm.Graph.Generator.MergeableGraphGenerator;
-import Util.PerformanceProfiler;
 import BoruvkasAlgorithm.BoruvkasParallelComponentBased;
 import BoruvkasAlgorithm.BoruvkasParallelMergeBased;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MinimumSpanningTreeGridUnitTest extends GraphTest {
-    
-	@Before 
-	public void ResetProfiler() {
-       PerformanceProfiler.Reset();
-    }
-	
-	@After 
-	public void PrintProfiler() {
-       PerformanceProfiler.Print(System.out, false);
-    }
-	
+
 	@Test
     public void ComponentisedGridGraphCorrectness() {
         ComponentisedGraph inputGraphSequential = new ComponentisedGraphGenerator(1L).GenerateGridGraph(100, 100, 1, 100);
