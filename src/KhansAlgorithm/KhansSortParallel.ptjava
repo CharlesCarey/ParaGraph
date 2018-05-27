@@ -1,0 +1,134 @@
+package KhansAlgorithm;
+
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.HashMap;
+
+import graph.*;
+import KhansAlgorithm.ParentCountVertex;
+import KhansAlgorithm.RandomGraphGenerator;
+
+import java.util.List;
+import java.util.Iterator;
+
+public class KhansSortParallel {
+
+    ConcurrentLinkedQueue<ParentCountVertex> _intermediateSort;
+    ConcurrentLinkedQueue<ParentCountVertex> _nodesToProcess;
+
+    BasicDirectedAcyclicGraph _graph;
+    
+    public static void main (String[] args) {
+    		RandomGraphGenerator graphGenerator = new RandomGraphGenerator();
+    	    KhansSortParallel k = new KhansSortParallel();
+
+        System.out.println("Generating graph");
+        List<ParentCountVertex> vertices = graphGenerator.generateVertices(500000, 3);
+        List<DirectedEdge> edges = graphGenerator.generateEdges(vertices, 20);
+        BasicDirectedAcyclicGraph graph = graphGenerator.buildGraph(vertices, edges);
+        System.out.println("Sorting...");
+
+        long before = System.currentTimeMillis();
+        List<Vertex> sortedGraph = k.sort(graph);
+        long after = System.currentTimeMillis();
+        long diff = after - before;        
+        System.out.println("time: " + diff);
+    	    
+    	    if (sortedGraph.size() > 1) {
+    	    		System.out.println("Done");
+    	    }
+    }
+
+    public List<Vertex> sort (BasicDirectedAcyclicGraph graph) {
+        _graph = graph;
+        List<Vertex> sortedGraph = new ArrayList<Vertex>();
+        _nodesToProcess = new ConcurrentLinkedQueue<ParentCountVertex>();
+        _intermediateSort = new ConcurrentLinkedQueue<ParentCountVertex>();
+
+        List<ParentCountVertex> vertices = new ArrayList<ParentCountVertex>(graph.verticesSet());
+        
+        try {
+        		if (vertices.size() > 4) {
+        			TaskIDGroup tasks = calculateParentCount(vertices);
+    	    			tasks.waitTillFinished();
+        		} else {
+        			for (ParentCountVertex v : vertices) {
+        	            int numberOfParents = graph.getParents(v).size();
+        	            v.setParentCount(numberOfParents);
+
+        	            if (v.isSource()) {
+        	            		_nodesToProcess.add(v);
+        	            }
+        	        }
+        		}
+	    } catch(ExecutionException ex) {
+	        System.out.println("Execution Exception");
+	    } catch(InterruptedException ex) {
+	    		System.out.println("Interrupted Exception");
+	    }
+
+        try {
+        		TaskIDGroup tasks = processNode();
+        		tasks.waitTillFinished();
+        } catch(ExecutionException ex) {
+            System.out.println("Execution Exception");
+        } catch(InterruptedException ex) {
+        		System.out.println("Interrupted Exception");
+        }
+        
+        while (!_intermediateSort.isEmpty()) {
+            sortedGraph.add(_intermediateSort.poll());
+        }
+
+        return sortedGraph;
+    }
+    
+    TASK(*) public void calculateParentCount (List<ParentCountVertex> vertices) {
+		int taskID = CurrentTask.relativeID();
+		int numOfTasks = CurrentTask.multiTaskSize();
+		
+		int numOfVertices = vertices.size();
+		
+		int startIndex = numOfVertices/numOfTasks * taskID;
+		int endIndex = numOfVertices/numOfTasks * (taskID + 1);
+		
+		if (taskID + 1 == CurrentTask.multiTaskSize()) {
+			endIndex = numOfVertices;
+		}
+				
+		for (int i = startIndex; i < endIndex; i++) {
+            ParentCountVertex v = vertices.get(i);
+
+			int numberOfParents = _graph.getParents(v).size();
+            v.setParentCount(numberOfParents);
+
+            if (v.isSource()) {
+            		_nodesToProcess.add(v);
+            }
+		}
+    		
+    }
+    
+    TASK(*) public void processNode () {
+    		while (!_nodesToProcess.isEmpty()) {
+    			ParentCountVertex v = _nodesToProcess.poll();
+    			
+    			if (v == null) {
+    				return;
+    			}
+
+            Iterator<ParentCountVertex> childrenIterator = _graph.childrenIterator(v);
+            _intermediateSort.add(v);
+
+            while (childrenIterator.hasNext()) {
+                ParentCountVertex child = childrenIterator.next();
+                synchronized (child) {
+	                child.decrementParentCount();
+                }
+                if (child.isSource()) {
+                		_nodesToProcess.add(child);
+                }
+            }
+    		}
+    }
+
+}
