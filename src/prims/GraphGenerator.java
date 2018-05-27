@@ -77,6 +77,27 @@ public class GraphGenerator {
 		return G;
     }
     
+    public BasicUndirectedGraph GenerateSparseGraph(int nodes, int minEdgeWeight, int maxEdgeWeight, String name) {
+    		BasicUndirectedGraph G = new BasicUndirectedGraph(name);
+    		
+    		for (int i = 0; i < nodes; i++) {
+    			String vertexName = getVertexName(i);
+    			G.add(new BasicVertex(vertexName));		
+    		}
+    		
+    		for (int i = 0; i < nodes-1; i++) {		
+    				Vertex vert = G.vertexForName(getVertexName(i));
+    				Vertex otherVert = G.vertexForName(getVertexName(i+1));
+    				
+    				String edgeName = getEdgeName(vert.name(), otherVert.name());			
+    				UndirectedEdge<Vertex> edge = new BasicSimpleEdge<Vertex>(edgeName, vert, otherVert, false);
+    				edge.setWeight(getEdgeWeight(minEdgeWeight, maxEdgeWeight));
+    				
+    				G.add(edge);
+    			}
+    		return G;    		
+    }
+    
     private String getVertexName(int row, int column) {
 		return String.format("%sx%s", row, column);
 	}
@@ -92,4 +113,5 @@ public class GraphGenerator {
 	private int getEdgeWeight(int minWeight, int maxWeight) {
 		return minWeight + _rnd.nextInt(maxWeight - minWeight + 1);
 	}
+	
 }
