@@ -77,6 +77,5 @@ local.properties
 .scala_dependencies
 .worksheet
 /target/
-*.jar
 *BoruvkasParallelComponentBased.java
 *BoruvkasParallelMergeBased.java
