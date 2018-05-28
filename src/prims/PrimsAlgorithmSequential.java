@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.LinkedList;
 
-public class PrimsAlgorithmParallel {
+public class PrimsAlgorithmSequential{
     private ConcurrentHashMap<String, UndirectedEdge> _keyValues  = new ConcurrentHashMap<String, UndirectedEdge>();
     private ConcurrentLinkedQueue<UndirectedEdge> _adjacentVerticesEdges = new ConcurrentLinkedQueue<UndirectedEdge>();
     
@@ -20,11 +20,11 @@ public class PrimsAlgorithmParallel {
 	        //this class executes prims algorithm in parallel and times it
 
 	        GraphGenerator gg = new GraphGenerator(1);
-	        BasicUndirectedGraph testGraph = gg.GenerateTotalGraph(GRAPH_SIZE, 1, 10, "test");
+	        BasicUndirectedGraph testGraph = gg.GenerateTotalGraph(GRAPH_SIZE, 1, 100, "test");
 	        PrintGraph(testGraph);
 	        
 	        long start_time = System.nanoTime();
-	        BasicUndirectedGraph mst = new PrimsAlgorithmParallel().Run(testGraph);
+	        BasicUndirectedGraph mst = new PrimsAlgorithmSequential().Run(testGraph);
 	        long end_time = System.nanoTime();
 	        
 	        PrintGraph(mst);
@@ -90,16 +90,10 @@ public class PrimsAlgorithmParallel {
 		            		adjacentVerticesEdges.add(e);
 		            		count++;
 		            }
-		            
-			        try {
-			        		TaskIDGroup tasks = TaskIterateVertices(adjacentVerticesEdges, nextVertex);
-			        		tasks.waitTillFinished();
-			        } catch(ExecutionException ex) {
-			            System.out.println("Execution Exception");
-			        } catch(InterruptedException ex) {
-			        		System.out.println("Interrupted Exception");
-			        }
-		             
+
+		            for(int i =0; i< 4; i++) {
+			        		TaskIterateVertices(adjacentVerticesEdges, nextVertex);
+		            }
 		           verticesNotYetCovered.remove(nextVertex);
 		           firstTime =false;
 		        }
@@ -108,7 +102,7 @@ public class PrimsAlgorithmParallel {
 	        return mst;
 	    }
 	    
-	    TASK(*) private void TaskIterateVertices(ConcurrentLinkedQueue<UndirectedEdge> q, BasicVertex nextVertex) {
+	    private void TaskIterateVertices(ConcurrentLinkedQueue<UndirectedEdge> q, BasicVertex nextVertex) {
 	    	UndirectedEdge e = null;	    	
 	    	while ((e = q.poll()) != null) {
             		Vertex second = e.second();
