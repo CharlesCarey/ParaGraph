@@ -99,7 +99,7 @@ public class GraphGenerator {
     }
     
     private String getVertexName(int row, int column) {
-		return String.format("%sx%s", row, column);
+		return String.format("%s", row + column*row);
 	}
     
     private String getVertexName(int node) {
