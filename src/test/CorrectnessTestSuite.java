@@ -7,10 +7,12 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
    BFSTest.class,
    KhansTestSuite.class,
+   KhansGeneratedTopologicalValidityTest.class,
    MinimumSpanningTreeGridUnitTest.class,
    MinimumSpanningTreeTotalUnitTests.class,
    ParallelCorrectnessUnitTest.class,
    PrimsTestsSequential.class,
+   PrimsTestsParallel.class,
    SequentialCorrectnessUnitTest.class,
    MinimumSpanningTreeTotalUnitTests.class
 })

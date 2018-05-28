@@ -36,7 +36,7 @@ public class BFSTest {
     public void testSequentialDirectedAcyclicGraph() {
         Graph graph = new GraphGenerator().generateGraph(nodes, children, true, false);
         LayerVertex source = getSource(graph);
-        HashMap<LayerVertex, Integer> distance = new BFSSequential().run(graph, source);
+        Map<LayerVertex, Integer> distance = new BFSSequential().run(graph, source);
 
         testResult(distance);
     }
@@ -54,7 +54,7 @@ public class BFSTest {
     public void testSequentialUndirectedAcyclicGraph() {
         Graph graph = new GraphGenerator().generateGraph(nodes, children, false, false);
         LayerVertex source = getSource(graph);
-        HashMap<LayerVertex, Integer> distance = new BFSSequential().run(graph, source);
+        Map<LayerVertex, Integer> distance = new BFSSequential().run(graph, source);
 
         testResult(distance);
     }
@@ -72,7 +72,7 @@ public class BFSTest {
     public void testSequentialDirectedCyclicGraph() {
         Graph graph = new GraphGenerator().generateGraph(nodes, children, true, true);
         LayerVertex source = getSource(graph);
-        HashMap<LayerVertex, Integer> distance = new BFSSequential().run(graph, source);
+        Map<LayerVertex, Integer> distance = new BFSSequential().run(graph, source);
 
         testResult(distance);
     }
