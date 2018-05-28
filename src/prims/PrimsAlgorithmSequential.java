@@ -8,63 +8,55 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutionException;
 import java.util.LinkedList;
 
-public class PrimsAlgorithm {
+public class PrimsAlgorithmSequential{
     private ConcurrentHashMap<String, UndirectedEdge> _keyValues  = new ConcurrentHashMap<String, UndirectedEdge>();
     private ConcurrentLinkedQueue<UndirectedEdge> _adjacentVerticesEdges = new ConcurrentLinkedQueue<UndirectedEdge>();
-    private ConcurrentHashMap<Integer, LinkedList<UndirectedEdge>> _adjEdgeQueues = new ConcurrentHashMap<Integer, LinkedList<UndirectedEdge>>();
     
-    private static final Integer GRAPH_SIZE = 50;
+    private static final Integer GRAPH_SIZE = 10;
     
 	    public static void main (String[] args) {
 	        //this class executes prims algorithm in parallel and times it
 
 	        GraphGenerator gg = new GraphGenerator(1);
-	        BasicUndirectedGraph testGraph = gg.GenerateTotalGraph(GRAPH_SIZE, 1, 10, "test");
+	        BasicUndirectedGraph testGraph = gg.GenerateTotalGraph(GRAPH_SIZE, 1, 100, "test");
 	        PrintGraph(testGraph);
 	        
-	        HashSet<BasicVertex> verticesNotYetCovered = new HashSet<BasicVertex>();
-	        Iterator<BasicVertex> it = testGraph.verticesIterator();
-	        
-	        BasicVertex firstVertex = null;
-	        while(it.hasNext()) {
-	        		BasicVertex v = it.next();
-	        		if(v.name().equals("0")) {
-	        			firstVertex = v;
-	        		}
-	        		verticesNotYetCovered.add(v);
-	        }
-
 	        long start_time = System.nanoTime();
-	        BasicUndirectedGraph mst = new PrimsAlgorithm().Run(testGraph, verticesNotYetCovered, firstVertex);
+	        BasicUndirectedGraph mst = new PrimsAlgorithmSequential().Run(testGraph);
 	        long end_time = System.nanoTime();
 	        
 	        PrintGraph(mst);
 	        System.out.println ("Runtime: " + (end_time - start_time)/1000000 + "ms");
-	       
-
 	    }
 
-	    public BasicUndirectedGraph Run(BasicUndirectedGraph inputGraph, HashSet<BasicVertex> verticesNotYetCovered, BasicVertex firstVtx){
+	    public BasicUndirectedGraph Run(BasicUndirectedGraph inputGraph){
 	        
-	        _keyValues.put(firstVtx.name(), new BasicSimpleEdge(""+firstVtx.name()+firstVtx.name(), firstVtx, firstVtx, false));
-	        _keyValues.get(firstVtx.name()).setWeight(0);
+	        HashSet<BasicVertex> verticesNotYetCovered = new HashSet<BasicVertex>();
+	        Iterator<BasicVertex> it = inputGraph.verticesIterator();
+	        
+	        BasicVertex firstVtx = null;
+	        while(it.hasNext()) {
+	        		BasicVertex v = it.next();
+	        		if(v.name().equals("0")) {
+	        			firstVtx = v;
+	        		}
+	        		verticesNotYetCovered.add(v);
+	        }
+	        
+	        ConcurrentLinkedQueue<UndirectedEdge> adjacentVerticesEdges = new ConcurrentLinkedQueue<UndirectedEdge>();
+
+	        if(firstVtx != null) {
+	        		_keyValues.put(firstVtx.name(), new BasicSimpleEdge(""+firstVtx.name()+firstVtx.name(), firstVtx, firstVtx, false));
+	        		_keyValues.get(firstVtx.name()).setWeight(0);
+	        }
 	        BasicUndirectedGraph mst = new BasicUndirectedGraph("mst");
 	        
-	        _adjEdgeQueues.put(0, new LinkedList<UndirectedEdge>());
-	        _adjEdgeQueues.put(1, new LinkedList<UndirectedEdge>());
-	        _adjEdgeQueues.put(2, new LinkedList<UndirectedEdge>());
-	        _adjEdgeQueues.put(3, new LinkedList<UndirectedEdge>());
-
-	        
 	        boolean firstTime = true;
-	        
-
+	        BasicVertex nextVertex = null;
 		        while(!verticesNotYetCovered.isEmpty()){
-		            //find next vertex to add to MST
-		            BasicVertex nextVertex = null;
+		        	//find next vertex to add to MST
 	
 		            //iterate over vertices to find min key value vertex
 		            int minWeight = Integer.MAX_VALUE;
@@ -86,8 +78,8 @@ public class PrimsAlgorithm {
 	
 		            //update key values around newest mst vertex
 		            /* To be parallelised */
-		            Iterator<BasicVertex> it = inputGraph.adjacentVerticesIterator(nextVertex);
-		            _adjacentVerticesEdges.clear();
+		            it = inputGraph.adjacentVerticesIterator(nextVertex);
+		            adjacentVerticesEdges.clear();
 		            int count = 0;
 		            while(it.hasNext()){
 		            		BasicVertex vtx = it.next();
@@ -95,30 +87,24 @@ public class PrimsAlgorithm {
 		            		if(!_keyValues.containsKey(vtx.name())){
 		            			_keyValues.put(vtx.name(), e);
 		            		}
-		            		_adjEdgeQueues.get(count%4).add(e);
-		            		_adjacentVerticesEdges.add(e);
+		            		adjacentVerticesEdges.add(e);
 		            		count++;
 		            }
-		            
-			        System.out.println("Start tasks");
-			        for(int i =0; i< 4; i++) {
-			        		TaskIterateVertices(nextVertex, i);
-			        }
-					System.out.println("End tasks");
-		             
+
+		            for(int i =0; i< 4; i++) {
+			        		TaskIterateVertices(adjacentVerticesEdges, nextVertex);
+		            }
 		           verticesNotYetCovered.remove(nextVertex);
 		           firstTime =false;
 		        }
+
 	        
 	        return mst;
 	    }
 	    
-	    private void TaskIterateVertices(BasicVertex nextVertex, int id) {
-	    	LinkedList<UndirectedEdge> q = _adjEdgeQueues.get(id);
+	    private void TaskIterateVertices(ConcurrentLinkedQueue<UndirectedEdge> q, BasicVertex nextVertex) {
 	    	UndirectedEdge e = null;	    	
-	    	System.out.println("Start task " + id);
 	    	while ((e = q.poll()) != null) {
-	    		System.out.println(id + " polls " + e.name());
             		Vertex second = e.second();
             		if(nextVertex.equals(e.second())) {
             			second = e.first();
@@ -127,8 +113,8 @@ public class PrimsAlgorithm {
                        _keyValues.put(second.name(), e);
                    }
             }
-         }	    
-
+         }
+	    
 	    private static void PrintGraph(BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> G) {
 	        System.out.println("================================================");
 	        System.out.println("# of vertices: " + G.sizeVertices());

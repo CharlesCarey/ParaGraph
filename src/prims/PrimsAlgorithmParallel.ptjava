@@ -13,9 +13,8 @@ import java.util.LinkedList;
 public class PrimsAlgorithmParallel {
     private ConcurrentHashMap<String, UndirectedEdge> _keyValues  = new ConcurrentHashMap<String, UndirectedEdge>();
     private ConcurrentLinkedQueue<UndirectedEdge> _adjacentVerticesEdges = new ConcurrentLinkedQueue<UndirectedEdge>();
-    private ConcurrentHashMap<Integer, LinkedList<UndirectedEdge>> _adjEdgeQueues = new ConcurrentHashMap<Integer, LinkedList<UndirectedEdge>>();
     
-    private static final Integer GRAPH_SIZE = 50;
+    private static final Integer GRAPH_SIZE = 10;
     
 	    public static void main (String[] args) {
 	        //this class executes prims algorithm in parallel and times it
@@ -24,46 +23,40 @@ public class PrimsAlgorithmParallel {
 	        BasicUndirectedGraph testGraph = gg.GenerateTotalGraph(GRAPH_SIZE, 1, 10, "test");
 	        PrintGraph(testGraph);
 	        
-	        HashSet<BasicVertex> verticesNotYetCovered = new HashSet<BasicVertex>();
-	        Iterator<BasicVertex> it = testGraph.verticesIterator();
-	        
-	        BasicVertex firstVertex = null;
-	        while(it.hasNext()) {
-	        		BasicVertex v = it.next();
-	        		if(v.name().equals("0")) {
-	        			firstVertex = v;
-	        		}
-	        		verticesNotYetCovered.add(v);
-	        }
-
 	        long start_time = System.nanoTime();
-	        BasicUndirectedGraph mst = new PrimsAlgorithmParallel().Run(testGraph, verticesNotYetCovered, firstVertex);
+	        BasicUndirectedGraph mst = new PrimsAlgorithmParallel().Run(testGraph);
 	        long end_time = System.nanoTime();
 	        
 	        PrintGraph(mst);
 	        System.out.println ("Runtime: " + (end_time - start_time)/1000000 + "ms");
-	       
-
 	    }
 
-	    public BasicUndirectedGraph Run(BasicUndirectedGraph inputGraph, HashSet<BasicVertex> verticesNotYetCovered, BasicVertex firstVtx){
+	    public BasicUndirectedGraph Run(BasicUndirectedGraph inputGraph){
 	        
-	        _keyValues.put(firstVtx.name(), new BasicSimpleEdge(""+firstVtx.name()+firstVtx.name(), firstVtx, firstVtx, false));
-	        _keyValues.get(firstVtx.name()).setWeight(0);
+	        HashSet<BasicVertex> verticesNotYetCovered = new HashSet<BasicVertex>();
+	        Iterator<BasicVertex> it = inputGraph.verticesIterator();
+	        
+	        BasicVertex firstVtx = null;
+	        while(it.hasNext()) {
+	        		BasicVertex v = it.next();
+	        		if(v.name().equals("0")) {
+	        			firstVtx = v;
+	        		}
+	        		verticesNotYetCovered.add(v);
+	        }
+	        
+	        ConcurrentLinkedQueue<UndirectedEdge> adjacentVerticesEdges = new ConcurrentLinkedQueue<UndirectedEdge>();
+
+	        if(firstVtx != null) {
+	        		_keyValues.put(firstVtx.name(), new BasicSimpleEdge(""+firstVtx.name()+firstVtx.name(), firstVtx, firstVtx, false));
+	        		_keyValues.get(firstVtx.name()).setWeight(0);
+	        }
 	        BasicUndirectedGraph mst = new BasicUndirectedGraph("mst");
 	        
-	        _adjEdgeQueues.put(0, new LinkedList<UndirectedEdge>());
-	        _adjEdgeQueues.put(1, new LinkedList<UndirectedEdge>());
-	        _adjEdgeQueues.put(2, new LinkedList<UndirectedEdge>());
-	        _adjEdgeQueues.put(3, new LinkedList<UndirectedEdge>());
-
-	        
 	        boolean firstTime = true;
-	        
-
+	        BasicVertex nextVertex = null;
 		        while(!verticesNotYetCovered.isEmpty()){
-		            //find next vertex to add to MST
-		            BasicVertex nextVertex = null;
+		        	//find next vertex to add to MST
 	
 		            //iterate over vertices to find min key value vertex
 		            int minWeight = Integer.MAX_VALUE;
@@ -85,8 +78,8 @@ public class PrimsAlgorithmParallel {
 	
 		            //update key values around newest mst vertex
 		            /* To be parallelised */
-		            Iterator<BasicVertex> it = inputGraph.adjacentVerticesIterator(nextVertex);
-		            _adjacentVerticesEdges.clear();
+		            it = inputGraph.adjacentVerticesIterator(nextVertex);
+		            adjacentVerticesEdges.clear();
 		            int count = 0;
 		            while(it.hasNext()){
 		            		BasicVertex vtx = it.next();
@@ -94,16 +87,13 @@ public class PrimsAlgorithmParallel {
 		            		if(!_keyValues.containsKey(vtx.name())){
 		            			_keyValues.put(vtx.name(), e);
 		            		}
-		            		_adjEdgeQueues.get(count%4).add(e);
-		            		_adjacentVerticesEdges.add(e);
+		            		adjacentVerticesEdges.add(e);
 		            		count++;
 		            }
 		            
 			        try {
-			            System.out.println("Start tasks");
-			        		TaskIDGroup tasks = TaskIterateVertices(nextVertex);
+			        		TaskIDGroup tasks = TaskIterateVertices(adjacentVerticesEdges, nextVertex);
 			        		tasks.waitTillFinished();
-			        		System.out.println("End tasks");
 			        } catch(ExecutionException ex) {
 			            System.out.println("Execution Exception");
 			        } catch(InterruptedException ex) {
@@ -118,12 +108,9 @@ public class PrimsAlgorithmParallel {
 	        return mst;
 	    }
 	    
-	    TASK(*) private void TaskIterateVertices(BasicVertex nextVertex) {
-	    	LinkedList<UndirectedEdge> q = _adjEdgeQueues.get(CurrentTask.relativeID());
+	    TASK(*) private void TaskIterateVertices(ConcurrentLinkedQueue<UndirectedEdge> q, BasicVertex nextVertex) {
 	    	UndirectedEdge e = null;	    	
-	    	System.out.println("Start task " + CurrentTask.relativeID());
 	    	while ((e = q.poll()) != null) {
-	    		System.out.println(CurrentTask.relativeID() + " polls " + e.name());
             		Vertex second = e.second();
             		if(nextVertex.equals(e.second())) {
             			second = e.first();
@@ -134,22 +121,6 @@ public class PrimsAlgorithmParallel {
             }
          }
 	    
-//	    TASK(4) private void TaskIterateVertices(BasicVertex nextVertex) {
-//	    	UndirectedEdge e = null;	    	
-//	    	System.out.println("Start task " + CurrentTask.relativeID());
-//	    	while ((e = _adjacentVerticesEdges.poll()) != null) {
-//	    		System.out.println(CurrentTask.relativeID() + " polls " + e.name());
-//            		Vertex second = e.second();
-//            		if(nextVertex.equals(e.second())) {
-//            			second = e.first();
-//            		}
-//                   if (e.weight() < _keyValues.get(second.name()).weight()) {
-//                       _keyValues.put(second.name(), e);
-//                   }
-//            }
-//         }
-	    
-
 	    private static void PrintGraph(BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> G) {
 	        System.out.println("================================================");
 	        System.out.println("# of vertices: " + G.sizeVertices());

@@ -34,191 +34,284 @@ public class PrimsAlgorithmParallel {//####[13]####
     private ConcurrentHashMap<String, UndirectedEdge> _keyValues = new ConcurrentHashMap<String, UndirectedEdge>();//####[14]####
 //####[15]####
     private ConcurrentLinkedQueue<UndirectedEdge> _adjacentVerticesEdges = new ConcurrentLinkedQueue<UndirectedEdge>();//####[15]####
-//####[16]####
-    private ConcurrentHashMap<Integer, LinkedList<UndirectedEdge>> _adjEdgeQueues = new ConcurrentHashMap<Integer, LinkedList<UndirectedEdge>>();//####[16]####
-//####[18]####
-    private static final Integer GRAPH_SIZE = 50;//####[18]####
-//####[20]####
-    public static void main(String[] args) {//####[20]####
-        GraphGenerator gg = new GraphGenerator(1);//####[23]####
-        BasicUndirectedGraph testGraph = gg.GenerateTotalGraph(GRAPH_SIZE, 1, 10, "test");//####[24]####
-        PrintGraph(testGraph);//####[25]####
-        HashSet<BasicVertex> verticesNotYetCovered = new HashSet<BasicVertex>();//####[27]####
-        Iterator<BasicVertex> it = testGraph.verticesIterator();//####[28]####
-        BasicVertex firstVertex = null;//####[30]####
-        while (it.hasNext()) //####[31]####
-        {//####[31]####
-            BasicVertex v = it.next();//####[32]####
-            if (v.name().equals("0")) //####[33]####
-            {//####[33]####
-                firstVertex = v;//####[34]####
-            }//####[35]####
-            verticesNotYetCovered.add(v);//####[36]####
-        }//####[37]####
-        long start_time = System.nanoTime();//####[39]####
-        BasicUndirectedGraph mst = new PrimsAlgorithmParallel().Run(testGraph, verticesNotYetCovered, firstVertex);//####[40]####
-        long end_time = System.nanoTime();//####[41]####
-        PrintGraph(mst);//####[43]####
-        System.out.println("Runtime: " + (end_time - start_time) / 1000000 + "ms");//####[44]####
-    }//####[47]####
-//####[49]####
-    public BasicUndirectedGraph Run(BasicUndirectedGraph inputGraph, HashSet<BasicVertex> verticesNotYetCovered, BasicVertex firstVtx) {//####[49]####
-        _keyValues.put(firstVtx.name(), new BasicSimpleEdge("" + firstVtx.name() + firstVtx.name(), firstVtx, firstVtx, false));//####[51]####
-        _keyValues.get(firstVtx.name()).setWeight(0);//####[52]####
-        BasicUndirectedGraph mst = new BasicUndirectedGraph("mst");//####[53]####
-        _adjEdgeQueues.put(0, new LinkedList<UndirectedEdge>());//####[55]####
-        _adjEdgeQueues.put(1, new LinkedList<UndirectedEdge>());//####[56]####
-        _adjEdgeQueues.put(2, new LinkedList<UndirectedEdge>());//####[57]####
-        _adjEdgeQueues.put(3, new LinkedList<UndirectedEdge>());//####[58]####
-        boolean firstTime = true;//####[61]####
-        while (!verticesNotYetCovered.isEmpty()) //####[64]####
-        {//####[64]####
-            BasicVertex nextVertex = null;//####[66]####
-            int minWeight = Integer.MAX_VALUE;//####[69]####
-            for (BasicVertex v : verticesNotYetCovered) //####[70]####
-            {//####[70]####
-                String name = v.name();//####[71]####
-                if (_keyValues.get(name) != null) //####[72]####
-                {//####[72]####
-                    int weight = _keyValues.get(name).weight();//####[73]####
-                    if (weight < minWeight) //####[74]####
-                    {//####[74]####
-                        nextVertex = v;//####[75]####
-                        minWeight = weight;//####[76]####
-                    }//####[77]####
-                }//####[78]####
-            }//####[79]####
-            mst.add(nextVertex);//####[80]####
-            if (!firstTime) //####[81]####
-            {//####[81]####
-                UndirectedEdge edge = _keyValues.get(nextVertex.name());//####[82]####
-                mst.add(edge);//####[83]####
-            }//####[84]####
-            Iterator<BasicVertex> it = inputGraph.adjacentVerticesIterator(nextVertex);//####[88]####
-            _adjacentVerticesEdges.clear();//####[89]####
-            int count = 0;//####[90]####
-            while (it.hasNext()) //####[91]####
-            {//####[91]####
-                BasicVertex vtx = it.next();//####[92]####
-                UndirectedEdge e = inputGraph.edgeBetween(nextVertex, vtx);//####[93]####
-                if (!_keyValues.containsKey(vtx.name())) //####[94]####
-                {//####[94]####
-                    _keyValues.put(vtx.name(), e);//####[95]####
-                }//####[96]####
-                _adjEdgeQueues.get(count % 4).add(e);//####[97]####
-                _adjacentVerticesEdges.add(e);//####[98]####
-                count++;//####[99]####
-            }//####[100]####
-            try {//####[102]####
-                System.out.println("Start tasks");//####[103]####
-                TaskIDGroup tasks = TaskIterateVertices(nextVertex);//####[104]####
-                tasks.waitTillFinished();//####[105]####
-                System.out.println("End tasks");//####[106]####
-            } catch (ExecutionException ex) {//####[107]####
-                System.out.println("Execution Exception");//####[108]####
-            } catch (InterruptedException ex) {//####[109]####
-                System.out.println("Interrupted Exception");//####[110]####
+//####[17]####
+    private static final Integer GRAPH_SIZE = 10;//####[17]####
+//####[19]####
+    public static void main(String[] args) {//####[19]####
+        GraphGenerator gg = new GraphGenerator(1);//####[22]####
+        BasicUndirectedGraph testGraph = gg.GenerateTotalGraph(GRAPH_SIZE, 1, 10, "test");//####[23]####
+        PrintGraph(testGraph);//####[24]####
+        long start_time = System.nanoTime();//####[26]####
+        BasicUndirectedGraph mst = new PrimsAlgorithmParallel().Run(testGraph);//####[27]####
+        long end_time = System.nanoTime();//####[28]####
+        PrintGraph(mst);//####[30]####
+        System.out.println("Runtime: " + (end_time - start_time) / 1000000 + "ms");//####[31]####
+    }//####[32]####
+//####[34]####
+    public BasicUndirectedGraph Run(BasicUndirectedGraph inputGraph) {//####[34]####
+        HashSet<BasicVertex> verticesNotYetCovered = new HashSet<BasicVertex>();//####[36]####
+        Iterator<BasicVertex> it = inputGraph.verticesIterator();//####[37]####
+        BasicVertex firstVtx = null;//####[39]####
+        while (it.hasNext()) //####[40]####
+        {//####[40]####
+            BasicVertex v = it.next();//####[41]####
+            if (v.name().equals("0")) //####[42]####
+            {//####[42]####
+                firstVtx = v;//####[43]####
+            }//####[44]####
+            verticesNotYetCovered.add(v);//####[45]####
+        }//####[46]####
+        ConcurrentLinkedQueue<UndirectedEdge> adjacentVerticesEdges = new ConcurrentLinkedQueue<UndirectedEdge>();//####[48]####
+        if (firstVtx != null) //####[50]####
+        {//####[50]####
+            _keyValues.put(firstVtx.name(), new BasicSimpleEdge("" + firstVtx.name() + firstVtx.name(), firstVtx, firstVtx, false));//####[51]####
+            _keyValues.get(firstVtx.name()).setWeight(0);//####[52]####
+        }//####[53]####
+        BasicUndirectedGraph mst = new BasicUndirectedGraph("mst");//####[54]####
+        boolean firstTime = true;//####[56]####
+        BasicVertex nextVertex = null;//####[57]####
+        while (!verticesNotYetCovered.isEmpty()) //####[58]####
+        {//####[58]####
+            int minWeight = Integer.MAX_VALUE;//####[62]####
+            for (BasicVertex v : verticesNotYetCovered) //####[63]####
+            {//####[63]####
+                String name = v.name();//####[64]####
+                if (_keyValues.get(name) != null) //####[65]####
+                {//####[65]####
+                    int weight = _keyValues.get(name).weight();//####[66]####
+                    if (weight < minWeight) //####[67]####
+                    {//####[67]####
+                        nextVertex = v;//####[68]####
+                        minWeight = weight;//####[69]####
+                    }//####[70]####
+                }//####[71]####
+            }//####[72]####
+            mst.add(nextVertex);//####[73]####
+            if (!firstTime) //####[74]####
+            {//####[74]####
+                UndirectedEdge edge = _keyValues.get(nextVertex.name());//####[75]####
+                mst.add(edge);//####[76]####
+            }//####[77]####
+            it = inputGraph.adjacentVerticesIterator(nextVertex);//####[81]####
+            adjacentVerticesEdges.clear();//####[82]####
+            int count = 0;//####[83]####
+            while (it.hasNext()) //####[84]####
+            {//####[84]####
+                BasicVertex vtx = it.next();//####[85]####
+                UndirectedEdge e = inputGraph.edgeBetween(nextVertex, vtx);//####[86]####
+                if (!_keyValues.containsKey(vtx.name())) //####[87]####
+                {//####[87]####
+                    _keyValues.put(vtx.name(), e);//####[88]####
+                }//####[89]####
+                adjacentVerticesEdges.add(e);//####[90]####
+                count++;//####[91]####
+            }//####[92]####
+            try {//####[94]####
+                TaskIDGroup tasks = TaskIterateVertices(adjacentVerticesEdges, nextVertex);//####[95]####
+                tasks.waitTillFinished();//####[96]####
+            } catch (ExecutionException ex) {//####[97]####
+                System.out.println("Execution Exception");//####[98]####
+            } catch (InterruptedException ex) {//####[99]####
+                System.out.println("Interrupted Exception");//####[100]####
+            }//####[101]####
+            verticesNotYetCovered.remove(nextVertex);//####[103]####
+            firstTime = false;//####[104]####
+        }//####[105]####
+        return mst;//####[108]####
+    }//####[109]####
+//####[111]####
+    private static volatile Method __pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_method = null;//####[111]####
+    private synchronized static void __pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_ensureMethodVarSet() {//####[111]####
+        if (__pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_method == null) {//####[111]####
+            try {//####[111]####
+                __pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_method = ParaTaskHelper.getDeclaredMethod(new ParaTaskHelper.ClassGetter().getCurrentClass(), "__pt__TaskIterateVertices", new Class[] {//####[111]####
+                    ConcurrentLinkedQueue.class, BasicVertex.class//####[111]####
+                });//####[111]####
+            } catch (Exception e) {//####[111]####
+                e.printStackTrace();//####[111]####
             }//####[111]####
-            verticesNotYetCovered.remove(nextVertex);//####[113]####
-            firstTime = false;//####[114]####
-        }//####[115]####
-        return mst;//####[118]####
-    }//####[119]####
-//####[121]####
-    private static volatile Method __pt__TaskIterateVertices_BasicVertex_method = null;//####[121]####
-    private synchronized static void __pt__TaskIterateVertices_BasicVertex_ensureMethodVarSet() {//####[121]####
-        if (__pt__TaskIterateVertices_BasicVertex_method == null) {//####[121]####
-            try {//####[121]####
-                __pt__TaskIterateVertices_BasicVertex_method = ParaTaskHelper.getDeclaredMethod(new ParaTaskHelper.ClassGetter().getCurrentClass(), "__pt__TaskIterateVertices", new Class[] {//####[121]####
-                    BasicVertex.class//####[121]####
-                });//####[121]####
-            } catch (Exception e) {//####[121]####
-                e.printStackTrace();//####[121]####
-            }//####[121]####
+        }//####[111]####
+    }//####[111]####
+    private TaskIDGroup<Void> TaskIterateVertices(ConcurrentLinkedQueue<UndirectedEdge> q, BasicVertex nextVertex) {//####[111]####
+        //-- execute asynchronously by enqueuing onto the taskpool//####[111]####
+        return TaskIterateVertices(q, nextVertex, new TaskInfo());//####[111]####
+    }//####[111]####
+    private TaskIDGroup<Void> TaskIterateVertices(ConcurrentLinkedQueue<UndirectedEdge> q, BasicVertex nextVertex, TaskInfo taskinfo) {//####[111]####
+        // ensure Method variable is set//####[111]####
+        if (__pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_method == null) {//####[111]####
+            __pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_ensureMethodVarSet();//####[111]####
+        }//####[111]####
+        taskinfo.setParameters(q, nextVertex);//####[111]####
+        taskinfo.setMethod(__pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_method);//####[111]####
+        taskinfo.setInstance(this);//####[111]####
+        return TaskpoolFactory.getTaskpool().enqueueMulti(taskinfo, -1);//####[111]####
+    }//####[111]####
+    private TaskIDGroup<Void> TaskIterateVertices(TaskID<ConcurrentLinkedQueue<UndirectedEdge>> q, BasicVertex nextVertex) {//####[111]####
+        //-- execute asynchronously by enqueuing onto the taskpool//####[111]####
+        return TaskIterateVertices(q, nextVertex, new TaskInfo());//####[111]####
+    }//####[111]####
+    private TaskIDGroup<Void> TaskIterateVertices(TaskID<ConcurrentLinkedQueue<UndirectedEdge>> q, BasicVertex nextVertex, TaskInfo taskinfo) {//####[111]####
+        // ensure Method variable is set//####[111]####
+        if (__pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_method == null) {//####[111]####
+            __pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_ensureMethodVarSet();//####[111]####
+        }//####[111]####
+        taskinfo.setTaskIdArgIndexes(0);//####[111]####
+        taskinfo.addDependsOn(q);//####[111]####
+        taskinfo.setParameters(q, nextVertex);//####[111]####
+        taskinfo.setMethod(__pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_method);//####[111]####
+        taskinfo.setInstance(this);//####[111]####
+        return TaskpoolFactory.getTaskpool().enqueueMulti(taskinfo, -1);//####[111]####
+    }//####[111]####
+    private TaskIDGroup<Void> TaskIterateVertices(BlockingQueue<ConcurrentLinkedQueue<UndirectedEdge>> q, BasicVertex nextVertex) {//####[111]####
+        //-- execute asynchronously by enqueuing onto the taskpool//####[111]####
+        return TaskIterateVertices(q, nextVertex, new TaskInfo());//####[111]####
+    }//####[111]####
+    private TaskIDGroup<Void> TaskIterateVertices(BlockingQueue<ConcurrentLinkedQueue<UndirectedEdge>> q, BasicVertex nextVertex, TaskInfo taskinfo) {//####[111]####
+        // ensure Method variable is set//####[111]####
+        if (__pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_method == null) {//####[111]####
+            __pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_ensureMethodVarSet();//####[111]####
+        }//####[111]####
+        taskinfo.setQueueArgIndexes(0);//####[111]####
+        taskinfo.setIsPipeline(true);//####[111]####
+        taskinfo.setParameters(q, nextVertex);//####[111]####
+        taskinfo.setMethod(__pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_method);//####[111]####
+        taskinfo.setInstance(this);//####[111]####
+        return TaskpoolFactory.getTaskpool().enqueueMulti(taskinfo, -1);//####[111]####
+    }//####[111]####
+    private TaskIDGroup<Void> TaskIterateVertices(ConcurrentLinkedQueue<UndirectedEdge> q, TaskID<BasicVertex> nextVertex) {//####[111]####
+        //-- execute asynchronously by enqueuing onto the taskpool//####[111]####
+        return TaskIterateVertices(q, nextVertex, new TaskInfo());//####[111]####
+    }//####[111]####
+    private TaskIDGroup<Void> TaskIterateVertices(ConcurrentLinkedQueue<UndirectedEdge> q, TaskID<BasicVertex> nextVertex, TaskInfo taskinfo) {//####[111]####
+        // ensure Method variable is set//####[111]####
+        if (__pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_method == null) {//####[111]####
+            __pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_ensureMethodVarSet();//####[111]####
+        }//####[111]####
+        taskinfo.setTaskIdArgIndexes(1);//####[111]####
+        taskinfo.addDependsOn(nextVertex);//####[111]####
+        taskinfo.setParameters(q, nextVertex);//####[111]####
+        taskinfo.setMethod(__pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_method);//####[111]####
+        taskinfo.setInstance(this);//####[111]####
+        return TaskpoolFactory.getTaskpool().enqueueMulti(taskinfo, -1);//####[111]####
+    }//####[111]####
+    private TaskIDGroup<Void> TaskIterateVertices(TaskID<ConcurrentLinkedQueue<UndirectedEdge>> q, TaskID<BasicVertex> nextVertex) {//####[111]####
+        //-- execute asynchronously by enqueuing onto the taskpool//####[111]####
+        return TaskIterateVertices(q, nextVertex, new TaskInfo());//####[111]####
+    }//####[111]####
+    private TaskIDGroup<Void> TaskIterateVertices(TaskID<ConcurrentLinkedQueue<UndirectedEdge>> q, TaskID<BasicVertex> nextVertex, TaskInfo taskinfo) {//####[111]####
+        // ensure Method variable is set//####[111]####
+        if (__pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_method == null) {//####[111]####
+            __pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_ensureMethodVarSet();//####[111]####
+        }//####[111]####
+        taskinfo.setTaskIdArgIndexes(0, 1);//####[111]####
+        taskinfo.addDependsOn(q);//####[111]####
+        taskinfo.addDependsOn(nextVertex);//####[111]####
+        taskinfo.setParameters(q, nextVertex);//####[111]####
+        taskinfo.setMethod(__pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_method);//####[111]####
+        taskinfo.setInstance(this);//####[111]####
+        return TaskpoolFactory.getTaskpool().enqueueMulti(taskinfo, -1);//####[111]####
+    }//####[111]####
+    private TaskIDGroup<Void> TaskIterateVertices(BlockingQueue<ConcurrentLinkedQueue<UndirectedEdge>> q, TaskID<BasicVertex> nextVertex) {//####[111]####
+        //-- execute asynchronously by enqueuing onto the taskpool//####[111]####
+        return TaskIterateVertices(q, nextVertex, new TaskInfo());//####[111]####
+    }//####[111]####
+    private TaskIDGroup<Void> TaskIterateVertices(BlockingQueue<ConcurrentLinkedQueue<UndirectedEdge>> q, TaskID<BasicVertex> nextVertex, TaskInfo taskinfo) {//####[111]####
+        // ensure Method variable is set//####[111]####
+        if (__pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_method == null) {//####[111]####
+            __pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_ensureMethodVarSet();//####[111]####
+        }//####[111]####
+        taskinfo.setQueueArgIndexes(0);//####[111]####
+        taskinfo.setIsPipeline(true);//####[111]####
+        taskinfo.setTaskIdArgIndexes(1);//####[111]####
+        taskinfo.addDependsOn(nextVertex);//####[111]####
+        taskinfo.setParameters(q, nextVertex);//####[111]####
+        taskinfo.setMethod(__pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_method);//####[111]####
+        taskinfo.setInstance(this);//####[111]####
+        return TaskpoolFactory.getTaskpool().enqueueMulti(taskinfo, -1);//####[111]####
+    }//####[111]####
+    private TaskIDGroup<Void> TaskIterateVertices(ConcurrentLinkedQueue<UndirectedEdge> q, BlockingQueue<BasicVertex> nextVertex) {//####[111]####
+        //-- execute asynchronously by enqueuing onto the taskpool//####[111]####
+        return TaskIterateVertices(q, nextVertex, new TaskInfo());//####[111]####
+    }//####[111]####
+    private TaskIDGroup<Void> TaskIterateVertices(ConcurrentLinkedQueue<UndirectedEdge> q, BlockingQueue<BasicVertex> nextVertex, TaskInfo taskinfo) {//####[111]####
+        // ensure Method variable is set//####[111]####
+        if (__pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_method == null) {//####[111]####
+            __pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_ensureMethodVarSet();//####[111]####
+        }//####[111]####
+        taskinfo.setQueueArgIndexes(1);//####[111]####
+        taskinfo.setIsPipeline(true);//####[111]####
+        taskinfo.setParameters(q, nextVertex);//####[111]####
+        taskinfo.setMethod(__pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_method);//####[111]####
+        taskinfo.setInstance(this);//####[111]####
+        return TaskpoolFactory.getTaskpool().enqueueMulti(taskinfo, -1);//####[111]####
+    }//####[111]####
+    private TaskIDGroup<Void> TaskIterateVertices(TaskID<ConcurrentLinkedQueue<UndirectedEdge>> q, BlockingQueue<BasicVertex> nextVertex) {//####[111]####
+        //-- execute asynchronously by enqueuing onto the taskpool//####[111]####
+        return TaskIterateVertices(q, nextVertex, new TaskInfo());//####[111]####
+    }//####[111]####
+    private TaskIDGroup<Void> TaskIterateVertices(TaskID<ConcurrentLinkedQueue<UndirectedEdge>> q, BlockingQueue<BasicVertex> nextVertex, TaskInfo taskinfo) {//####[111]####
+        // ensure Method variable is set//####[111]####
+        if (__pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_method == null) {//####[111]####
+            __pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_ensureMethodVarSet();//####[111]####
+        }//####[111]####
+        taskinfo.setQueueArgIndexes(1);//####[111]####
+        taskinfo.setIsPipeline(true);//####[111]####
+        taskinfo.setTaskIdArgIndexes(0);//####[111]####
+        taskinfo.addDependsOn(q);//####[111]####
+        taskinfo.setParameters(q, nextVertex);//####[111]####
+        taskinfo.setMethod(__pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_method);//####[111]####
+        taskinfo.setInstance(this);//####[111]####
+        return TaskpoolFactory.getTaskpool().enqueueMulti(taskinfo, -1);//####[111]####
+    }//####[111]####
+    private TaskIDGroup<Void> TaskIterateVertices(BlockingQueue<ConcurrentLinkedQueue<UndirectedEdge>> q, BlockingQueue<BasicVertex> nextVertex) {//####[111]####
+        //-- execute asynchronously by enqueuing onto the taskpool//####[111]####
+        return TaskIterateVertices(q, nextVertex, new TaskInfo());//####[111]####
+    }//####[111]####
+    private TaskIDGroup<Void> TaskIterateVertices(BlockingQueue<ConcurrentLinkedQueue<UndirectedEdge>> q, BlockingQueue<BasicVertex> nextVertex, TaskInfo taskinfo) {//####[111]####
+        // ensure Method variable is set//####[111]####
+        if (__pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_method == null) {//####[111]####
+            __pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_ensureMethodVarSet();//####[111]####
+        }//####[111]####
+        taskinfo.setQueueArgIndexes(0, 1);//####[111]####
+        taskinfo.setIsPipeline(true);//####[111]####
+        taskinfo.setParameters(q, nextVertex);//####[111]####
+        taskinfo.setMethod(__pt__TaskIterateVertices_ConcurrentLinkedQueueUndirectedEdge_BasicVertex_method);//####[111]####
+        taskinfo.setInstance(this);//####[111]####
+        return TaskpoolFactory.getTaskpool().enqueueMulti(taskinfo, -1);//####[111]####
+    }//####[111]####
+    public void __pt__TaskIterateVertices(ConcurrentLinkedQueue<UndirectedEdge> q, BasicVertex nextVertex) {//####[111]####
+        UndirectedEdge e = null;//####[112]####
+        while ((e = q.poll()) != null) //####[113]####
+        {//####[113]####
+            Vertex second = e.second();//####[114]####
+            if (nextVertex.equals(e.second())) //####[115]####
+            {//####[115]####
+                second = e.first();//####[116]####
+            }//####[117]####
+            if (e.weight() < _keyValues.get(second.name()).weight()) //####[118]####
+            {//####[118]####
+                _keyValues.put(second.name(), e);//####[119]####
+            }//####[120]####
         }//####[121]####
-    }//####[121]####
-    private TaskIDGroup<Void> TaskIterateVertices(BasicVertex nextVertex) {//####[121]####
-        //-- execute asynchronously by enqueuing onto the taskpool//####[121]####
-        return TaskIterateVertices(nextVertex, new TaskInfo());//####[121]####
-    }//####[121]####
-    private TaskIDGroup<Void> TaskIterateVertices(BasicVertex nextVertex, TaskInfo taskinfo) {//####[121]####
-        // ensure Method variable is set//####[121]####
-        if (__pt__TaskIterateVertices_BasicVertex_method == null) {//####[121]####
-            __pt__TaskIterateVertices_BasicVertex_ensureMethodVarSet();//####[121]####
-        }//####[121]####
-        taskinfo.setParameters(nextVertex);//####[121]####
-        taskinfo.setMethod(__pt__TaskIterateVertices_BasicVertex_method);//####[121]####
-        taskinfo.setInstance(this);//####[121]####
-        return TaskpoolFactory.getTaskpool().enqueueMulti(taskinfo, -1);//####[121]####
-    }//####[121]####
-    private TaskIDGroup<Void> TaskIterateVertices(TaskID<BasicVertex> nextVertex) {//####[121]####
-        //-- execute asynchronously by enqueuing onto the taskpool//####[121]####
-        return TaskIterateVertices(nextVertex, new TaskInfo());//####[121]####
-    }//####[121]####
-    private TaskIDGroup<Void> TaskIterateVertices(TaskID<BasicVertex> nextVertex, TaskInfo taskinfo) {//####[121]####
-        // ensure Method variable is set//####[121]####
-        if (__pt__TaskIterateVertices_BasicVertex_method == null) {//####[121]####
-            __pt__TaskIterateVertices_BasicVertex_ensureMethodVarSet();//####[121]####
-        }//####[121]####
-        taskinfo.setTaskIdArgIndexes(0);//####[121]####
-        taskinfo.addDependsOn(nextVertex);//####[121]####
-        taskinfo.setParameters(nextVertex);//####[121]####
-        taskinfo.setMethod(__pt__TaskIterateVertices_BasicVertex_method);//####[121]####
-        taskinfo.setInstance(this);//####[121]####
-        return TaskpoolFactory.getTaskpool().enqueueMulti(taskinfo, -1);//####[121]####
-    }//####[121]####
-    private TaskIDGroup<Void> TaskIterateVertices(BlockingQueue<BasicVertex> nextVertex) {//####[121]####
-        //-- execute asynchronously by enqueuing onto the taskpool//####[121]####
-        return TaskIterateVertices(nextVertex, new TaskInfo());//####[121]####
-    }//####[121]####
-    private TaskIDGroup<Void> TaskIterateVertices(BlockingQueue<BasicVertex> nextVertex, TaskInfo taskinfo) {//####[121]####
-        // ensure Method variable is set//####[121]####
-        if (__pt__TaskIterateVertices_BasicVertex_method == null) {//####[121]####
-            __pt__TaskIterateVertices_BasicVertex_ensureMethodVarSet();//####[121]####
-        }//####[121]####
-        taskinfo.setQueueArgIndexes(0);//####[121]####
-        taskinfo.setIsPipeline(true);//####[121]####
-        taskinfo.setParameters(nextVertex);//####[121]####
-        taskinfo.setMethod(__pt__TaskIterateVertices_BasicVertex_method);//####[121]####
-        taskinfo.setInstance(this);//####[121]####
-        return TaskpoolFactory.getTaskpool().enqueueMulti(taskinfo, -1);//####[121]####
-    }//####[121]####
-    public void __pt__TaskIterateVertices(BasicVertex nextVertex) {//####[121]####
-        LinkedList<UndirectedEdge> q = _adjEdgeQueues.get(CurrentTask.relativeID());//####[122]####
-        UndirectedEdge e = null;//####[123]####
-        System.out.println("Start task " + CurrentTask.relativeID());//####[124]####
-        while ((e = q.poll()) != null) //####[125]####
-        {//####[125]####
-            System.out.println(CurrentTask.relativeID() + " polls " + e.name());//####[126]####
-            Vertex second = e.second();//####[127]####
-            if (nextVertex.equals(e.second())) //####[128]####
-            {//####[128]####
-                second = e.first();//####[129]####
-            }//####[130]####
-            if (e.weight() < _keyValues.get(second.name()).weight()) //####[131]####
-            {//####[131]####
-                _keyValues.put(second.name(), e);//####[132]####
-            }//####[133]####
-        }//####[134]####
-    }//####[135]####
-//####[135]####
-//####[153]####
-    private static void PrintGraph(BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> G) {//####[153]####
-        System.out.println("================================================");//####[154]####
-        System.out.println("# of vertices: " + G.sizeVertices());//####[155]####
-        System.out.println("# of edges: " + G.sizeEdges());//####[156]####
-        System.out.println();//####[157]####
-        int count = 0;//####[159]####
-        for (BasicSimpleEdge<BasicVertex> e : G.edges()) //####[161]####
-        {//####[161]####
-            System.out.println(FormatEdge(e));//####[162]####
-            count += e.weight();//####[163]####
-        }//####[164]####
-        System.out.println();//####[166]####
-        System.out.println("Minimum Total Edge Weight: " + count);//####[167]####
-    }//####[168]####
-//####[170]####
-    private static String FormatEdge(BasicSimpleEdge<BasicVertex> e) {//####[170]####
-        return String.format("{%2s}----%2s----{%2s}", e.from().name(), e.weight(), e.to().name());//####[171]####
-    }//####[172]####
-}//####[172]####
+    }//####[122]####
+//####[122]####
+//####[124]####
+    private static void PrintGraph(BasicUndirectedGraph<BasicVertex, BasicSimpleEdge<BasicVertex>> G) {//####[124]####
+        System.out.println("================================================");//####[125]####
+        System.out.println("# of vertices: " + G.sizeVertices());//####[126]####
+        System.out.println("# of edges: " + G.sizeEdges());//####[127]####
+        System.out.println();//####[128]####
+        int count = 0;//####[130]####
+        for (BasicSimpleEdge<BasicVertex> e : G.edges()) //####[132]####
+        {//####[132]####
+            System.out.println(FormatEdge(e));//####[133]####
+            count += e.weight();//####[134]####
+        }//####[135]####
+        System.out.println();//####[137]####
+        System.out.println("Minimum Total Edge Weight: " + count);//####[138]####
+    }//####[139]####
+//####[141]####
+    private static String FormatEdge(BasicSimpleEdge<BasicVertex> e) {//####[141]####
+        return String.format("{%2s}----%2s----{%2s}", e.from().name(), e.weight(), e.to().name());//####[142]####
+    }//####[143]####
+}//####[143]####
