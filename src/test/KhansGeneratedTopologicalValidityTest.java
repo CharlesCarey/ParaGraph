@@ -28,10 +28,9 @@ public class KhansGeneratedTopologicalValidityTest {
 		_graphGenerator = new RandomGraphGenerator();
 	}
 
-	/*
 	@Test
 	public void testSequentialKhansWithLargeGeneratedGraphWithFewNodesPerLevel () {
-		List<ParentCountVertex> vertices = _graphGenerator.generateVertices(50000, 3);
+		List<ParentCountVertex> vertices = _graphGenerator.generateVertices(1000, 3);
         List<DirectedEdge> edges = _graphGenerator.generateEdges(vertices, 3);
         BasicDirectedAcyclicGraph graph = _graphGenerator.buildGraph(vertices, edges);
         
@@ -42,7 +41,7 @@ public class KhansGeneratedTopologicalValidityTest {
 	
 	@Test
 	public void testParallelKhansWithLargeGeneratedGraphWithFewNodesPerLevel () {
-		List<ParentCountVertex> vertices = _graphGenerator.generateVertices(50000, 3);
+		List<ParentCountVertex> vertices = _graphGenerator.generateVertices(1000, 3);
         List<DirectedEdge> edges = _graphGenerator.generateEdges(vertices, 3);
         BasicDirectedAcyclicGraph graph = _graphGenerator.buildGraph(vertices, edges);
         
@@ -53,7 +52,7 @@ public class KhansGeneratedTopologicalValidityTest {
 	
 	@Test
 	public void testSequentialKhansWithLargeGraphWithManyNodesPerLevel () {
-		List<ParentCountVertex> vertices = _graphGenerator.generateVertices(50000, 3);
+		List<ParentCountVertex> vertices = _graphGenerator.generateVertices(1000, 3);
         List<DirectedEdge> edges = _graphGenerator.generateEdges(vertices, 100);
         BasicDirectedAcyclicGraph graph = _graphGenerator.buildGraph(vertices, edges);
         
@@ -64,7 +63,7 @@ public class KhansGeneratedTopologicalValidityTest {
 	
 	@Test
 	public void testParallelKhansWithLargeGraphWithManyNodesPerLevel () {
-		List<ParentCountVertex> vertices = _graphGenerator.generateVertices(50000, 3);
+		List<ParentCountVertex> vertices = _graphGenerator.generateVertices(1000, 3);
         List<DirectedEdge> edges = _graphGenerator.generateEdges(vertices, 100);
         BasicDirectedAcyclicGraph graph = _graphGenerator.buildGraph(vertices, edges);
         
@@ -72,7 +71,6 @@ public class KhansGeneratedTopologicalValidityTest {
         assertEquals(vertices.size(), sortedGraph.size());
         assertEquals(true, isValidTopologicalSort(sortedGraph, graph));
 	}
-	*/
 	
 	public static boolean isValidTopologicalSort (List<Vertex> topologicalOrdering, BasicDirectedAcyclicGraph graph) {
         HashMap<Vertex, Boolean> seenNodes = new HashMap<Vertex, Boolean>();
