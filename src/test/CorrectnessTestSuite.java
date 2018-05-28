@@ -10,7 +10,7 @@ import org.junit.runners.Suite;
    MinimumSpanningTreeGridUnitTest.class,
    MinimumSpanningTreeTotalUnitTests.class,
    ParallelCorrectnessUnitTest.class,
-   PrimsTestSequential.class,
+   PrimsTestsSequential.class,
    SequentialCorrectnessUnitTest.class,
    MinimumSpanningTreeTotalUnitTests.class
 })
