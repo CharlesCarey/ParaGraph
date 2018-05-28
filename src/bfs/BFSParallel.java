@@ -26,17 +26,18 @@ public class BFSParallel {//####[8]####
             m.invoke(instance, arg, interResult);//####[8]####
     }//####[8]####
 //####[9]####
-    Queue<LayerVertex> _waitlist = new LinkedList<LayerVertex>();//####[9]####
+    static final int cores = 4;//####[9]####
 //####[10]####
-    HashMap<Integer, Queue<LayerVertex>> _bags = new HashMap();//####[10]####
+    Queue<LayerVertex> _waitlist = new LinkedList<LayerVertex>();//####[10]####
 //####[11]####
-    ConcurrentHashMap<LayerVertex, Integer> _distance = new ConcurrentHashMap();//####[11]####
+    HashMap<Integer, Queue<LayerVertex>> _bags = new HashMap();//####[11]####
 //####[12]####
-    Graph _graph;//####[12]####
-//####[14]####
-    public ConcurrentHashMap<LayerVertex, Integer> run(Graph graph, LayerVertex source) {//####[14]####
-        _graph = graph;//####[15]####
-        int cores = 1;//####[16]####
+    ConcurrentHashMap<LayerVertex, Integer> _distance = new ConcurrentHashMap();//####[12]####
+//####[13]####
+    Graph _graph;//####[13]####
+//####[15]####
+    public ConcurrentHashMap<LayerVertex, Integer> run(Graph graph, LayerVertex source) {//####[15]####
+        _graph = graph;//####[16]####
         for (int i = 0; i < cores; i++) //####[19]####
         {//####[19]####
             _bags.put(i, new LinkedList<LayerVertex>());//####[20]####
@@ -45,7 +46,7 @@ public class BFSParallel {//####[8]####
         _waitlist.add(source);//####[24]####
         while (!_waitlist.isEmpty()) //####[26]####
         {//####[26]####
-            if (_waitlist.size() < cores * 1) //####[28]####
+            if (_waitlist.size() < cores) //####[28]####
             {//####[28]####
                 int size = _waitlist.size();//####[30]####
                 for (int i = 0; i < size; i++) //####[31]####
@@ -118,7 +119,7 @@ public class BFSParallel {//####[8]####
         taskinfo.setParameters();//####[80]####
         taskinfo.setMethod(__pt__processBag__method);//####[80]####
         taskinfo.setInstance(this);//####[80]####
-        return TaskpoolFactory.getTaskpool().enqueueMulti(taskinfo, 1);//####[80]####
+        return TaskpoolFactory.getTaskpool().enqueueMulti(taskinfo, cores);//####[80]####
     }//####[80]####
     public void __pt__processBag() {//####[80]####
         int core = CurrentTask.relativeID();//####[81]####

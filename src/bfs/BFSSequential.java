@@ -5,7 +5,7 @@ import java.util.*;
 
 public class BFSSequential {
 
-    public HashMap<LayerVertex, Integer> run(Graph graph, LayerVertex source) {
+    public Map<LayerVertex, Integer> run(Graph graph, LayerVertex source) {
         Queue<Vertex> waitlist = new LinkedList<>();
         HashMap<LayerVertex, Integer> distance = new HashMap();
         distance.put(source, 0);
